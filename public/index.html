@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#4f8ff7">
+  <title>Nova — Assistente de IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div>
+          <h1>Nova <span>✦</span></h1>
+          <p>Sua assistente de IA</p>
+        </div>
+      </div>
+
+      <button id="newChat" class="new-chat"><span>＋</span> Nova conversa</button>
+
+      <nav class="nav">
+        <button class="nav-item active"><span>⌂</span> Início</button>
+        <button class="nav-item" id="historyBtn"><span>◷</span> Histórico</button>
+        <button class="nav-item" id="settingsBtn"><span>⚙</span> Configurações</button>
+      </nav>
+
+      <div class="history-head">Conversas recentes</div>
+      <div id="history" class="history"></div>
+
+      <div class="sidebar-bottom">
+        <button id="themeBtn" class="theme-toggle"><span>☾</span><span>Modo claro</span><span class="sun">☼</span></button>
+        <button id="clear" class="danger-link"><span>♜</span> Limpar conversas</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menuBtn" class="mobile-menu" aria-label="Abrir menu">☰</button>
+        <div class="nova-bot mini" aria-hidden="true"><div class="nova-face"><i class="nova-brow l"></i><i class="nova-brow r"></i><i class="nova-eye l"></i><i class="nova-eye r"></i><b class="nova-mouth"></b></div></div>
+        <span class="bot-mood" id="botMood"></span>
+        <div class="topbar-spacer"></div>
+        <div class="voice-picker">
+          <span>♩</span>
+          <select id="voiceSelect" aria-label="Voz para leitura">
+            <option value="">Voz padrão</option>
+          </select>
+        </div>
+        <div class="avatar">N</div>
+      </header>
+
+      <section class="content">
+        <div id="welcome" class="welcome">
+          <div class="nova-bot big" aria-hidden="true"><div class="nova-face"><i class="nova-brow l"></i><i class="nova-brow r"></i><i class="nova-eye l"></i><i class="nova-eye r"></i><b class="nova-mouth"></b></div></div>
+          <h2>Olá! Eu sou a <strong>Nova</strong></h2>
+          <p>Estou aqui para conversar, responder suas perguntas,<br class="desktop-only"> ajudar nas suas ideias e no que você precisar. Pode falar comigo! ♡</p>
+        </div>
+
+        <div id="suggestions" class="suggestions">
+          <button class="suggestion" data-prompt="Me dê ideias criativas para um projeto."><span class="sicon">♧</span><b>Me dê ideias</b><small>Sugestões criativas para projetos, estudos e mais.</small></button>
+          <button class="suggestion" data-prompt="Me ajude a organizar uma tarefa ou plano."><span class="sicon">▤</span><b>Me ajude a organizar</b><small>Planejamento, listas, rotinas e muito mais.</small></button>
+          <button class="suggestion" data-prompt="Explique um assunto de forma simples e clara."><span class="sicon">⌂</span><b>Explique um assunto</b><small>De forma simples e clara.</small></button>
+          <button class="suggestion" data-prompt="Crie algo criativo para mim."><span class="sicon">✎</span><b>Crie algo para mim</b><small>Textos, roteiros, ideias e mais.</small></button>
+        </div>
+
+        <div class="chat-wrap">
+          <section id="chat" class="chat" aria-live="polite"></section>
+          <aside class="side-bot">
+            <div class="nova-bot side" aria-hidden="true"><div class="nova-face"><i class="nova-brow l"></i><i class="nova-brow r"></i><i class="nova-eye l"></i><i class="nova-eye r"></i><b class="nova-mouth"></b></div></div>
+            <div class="side-mood" id="sideMood"></div>
+          </aside>
+        </div>
+
+        <div id="status" class="status">Pronto para conversar.</div>
+
+        <form id="form" class="composer">
+          <button type="button" class="attach" title="Anexar">⌕</button>
+          <input id="input" placeholder="Digite sua mensagem aqui..." autocomplete="off" spellcheck="true" lang="pt-BR" autocorrect="on">
+          <button type="button" id="mic" class="mic" title="Falar">♩</button>
+          <span class="divider"></span>
+          <button type="submit" class="send" title="Enviar">➤</button>
+        </form>
+
+        <div class="quick-actions">
+          <button id="micQuick">♩ &nbsp; Usar microfone</button>
+          <button id="speak">◖ &nbsp; Ler resposta</button>
+          <button id="memoryBtn">▤ &nbsp; Memória ativada</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="script.js"></script>
+</body>
+</html>
