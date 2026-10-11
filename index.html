@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D Barros</title>
+  <meta name="description" content="A casa dos projetos da família de Barros: sites, jogos, robôs e ideias feitos por nós 3.">
+  <meta name="theme-color" content="#ff6b4a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff6b4a'/%3E%3Ctext x='32' y='46' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='38' text-anchor='middle' fill='%23fff'%3E3D%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --coral: #ff6b4a;  --coral-dark: #c23f22;  --coral-soft: #ffe3da;
+      --sol:   #ffc93c;  --sol-dark:   #c48f00;  --sol-soft:   #fff2c2;
+      --mar:   #3d8bff;  --mar-dark:   #1f4fb3;  --mar-soft:   #dbe8ff;
+
+      --bg: #fff8f1;
+      --surface: #ffffff;
+      --ink: #1f2430;
+      --muted: #67707f;
+      --line: #eadfd4;
+      --shadow: 0 14px 40px rgba(60, 40, 20, .10);
+      --radius: 22px;
+      --hl: var(--sol);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #14171f;
+        --surface: #1d2230;
+        --ink: #f1f3f8;
+        --muted: #a2abbb;
+        --line: #2c3344;
+        --shadow: 0 14px 40px rgba(0, 0, 0, .45);
+        --coral-soft: #4a2a22; --sol-soft: #45391a; --mar-soft: #1e2d4d;
+        --hl: #8a6400;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #14171f;
+      --surface: #1d2230;
+      --ink: #f1f3f8;
+      --muted: #a2abbb;
+      --line: #2c3344;
+      --shadow: 0 14px 40px rgba(0, 0, 0, .45);
+      --coral-soft: #4a2a22; --sol-soft: #45391a; --mar-soft: #1e2d4d;
+        --hl: #8a6400;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Nunito, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--ink);
+      background: var(--bg);
+      background-image:
+        radial-gradient(circle at 12% 8%, var(--coral-soft) 0, transparent 28%),
+        radial-gradient(circle at 88% 12%, var(--sol-soft) 0, transparent 26%),
+        radial-gradient(circle at 70% 90%, var(--mar-soft) 0, transparent 30%);
+      background-attachment: fixed;
+    }
+    a { color: inherit; }
+    .wrap { width: min(1080px, 100% - 32px); margin: 0 auto; }
+
+    /* ---------- topo ---------- */
+    .top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 0;
+    }
+    .top .mark { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; }
+    .top .mark b { color: var(--coral); }
+    .top nav { display: flex; gap: 6px; }
+    .top nav a {
+      text-decoration: none; font-weight: 700; font-size: 15px; color: var(--muted);
+      padding: 8px 12px; border-radius: 999px;
+    }
+    .top nav a:hover { background: var(--surface); color: var(--ink); }
+
+    /* ---------- hero ---------- */
+    .hero { padding: 48px 0 24px; text-align: center; }
+    .logo {
+      display: inline-flex; align-items: baseline; gap: .12em; flex-wrap: wrap; justify-content: center;
+      font-family: "Baloo 2", sans-serif; font-weight: 800; line-height: .95; letter-spacing: -.02em;
+      font-size: clamp(64px, 15vw, 150px);
+      margin: 0;
+      perspective: 600px;
+    }
+    .logo .g {
+      display: inline-block;
+      transform: rotateX(8deg) rotateY(-6deg);
+      transition: transform .35s ease;
+    }
+    .logo .g.c { color: var(--coral); text-shadow: 1px 1px 0 var(--coral-dark), 2px 2px 0 var(--coral-dark), 3px 3px 0 var(--coral-dark), 4px 4px 0 var(--coral-dark), 5px 5px 0 var(--coral-dark), 6px 6px 0 var(--coral-dark), 7px 7px 0 var(--coral-dark), 8px 8px 0 var(--coral-dark), 12px 14px 20px rgba(0,0,0,.18); }
+    .logo .g.m { color: var(--mar);   text-shadow: 1px 1px 0 var(--mar-dark), 2px 2px 0 var(--mar-dark), 3px 3px 0 var(--mar-dark), 4px 4px 0 var(--mar-dark), 5px 5px 0 var(--mar-dark), 6px 6px 0 var(--mar-dark), 7px 7px 0 var(--mar-dark), 8px 8px 0 var(--mar-dark), 12px 14px 20px rgba(0,0,0,.18); }
+    .logo:hover .g { transform: rotateX(-6deg) rotateY(8deg); }
+    .logo .word {
+      font-size: .42em; color: var(--ink); margin-left: .25em;
+      background: linear-gradient(transparent 62%, var(--hl) 62%, var(--hl) 92%, transparent 92%);
+      padding: 0 .1em;
+    }
+    .tagline { font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; margin: 34px 0 8px; }
+    .sub { color: var(--muted); max-width: 560px; margin: 0 auto; }
+
+    .trio { display: inline-flex; align-items: center; gap: 10px; margin-top: 22px; color: var(--muted); font-weight: 700; font-size: 15px; }
+    .trio .dots { display: inline-flex; }
+    .trio .dots i {
+      width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--bg);
+      display: inline-block; margin-left: -9px;
+    }
+    .trio .dots i:first-child { margin-left: 0; }
+    .trio .dots i:nth-child(1) { background: var(--coral); }
+    .trio .dots i:nth-child(2) { background: var(--sol); }
+    .trio .dots i:nth-child(3) { background: var(--mar); }
+
+    /* ---------- seções ---------- */
+    section { padding: 44px 0; }
+    h2 {
+      font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: clamp(28px, 4vw, 36px);
+      line-height: 1.1; margin: 0 0 6px;
+    }
+    .lead { color: var(--muted); margin: 0 0 24px; }
+
+    /* ---------- cartões ---------- */
+    .grid {
+      display: grid; gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .card {
+      position: relative; display: flex; flex-direction: column; gap: 10px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 22px; text-decoration: none; min-height: 210px;
+      box-shadow: 0 2px 0 var(--line);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .card:hover, .card:focus-visible { transform: translateY(-4px); box-shadow: var(--shadow); outline: none; }
+    .card .ico {
+      width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+      font-size: 28px; color: #fff; background: var(--c, var(--mar));
+      box-shadow: 0 4px 0 var(--c-dark, var(--mar-dark));
+    }
+    .card h3 { margin: 6px 0 0; font-family: "Baloo 2", sans-serif; font-size: 24px; line-height: 1.1; }
+    .card p { margin: 0; color: var(--muted); font-size: 15.5px; flex: 1; }
+    .card .meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); font-weight: 700; }
+    .card .meta span { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+    .card .go {
+      position: absolute; right: 18px; top: 18px; width: 34px; height: 34px; border-radius: 50%;
+      display: grid; place-items: center; color: var(--muted); border: 1px solid var(--line); font-size: 18px;
+      transition: .2s;
+    }
+    .card:hover .go { background: var(--c, var(--mar)); color: #fff; border-color: transparent; }
+    .card.coral { --c: var(--coral); --c-dark: var(--coral-dark); }
+    .card.sol   { --c: var(--sol);   --c-dark: var(--sol-dark); }
+    .card.mar   { --c: var(--mar);   --c-dark: var(--mar-dark); }
+
+    .card.novo {
+      border: 2px dashed var(--line); background: transparent; box-shadow: none;
+      align-items: center; justify-content: center; text-align: center; color: var(--muted);
+    }
+    .card.novo .ico { background: transparent; color: var(--muted); border: 2px dashed var(--line); box-shadow: none; }
+    .card.novo h3 { color: var(--ink); }
+    .card.novo:hover { border-color: var(--coral); color: var(--ink); }
+
+    .vazio { color: var(--muted); font-style: italic; }
+
+    /* ---------- como ---------- */
+    .passos { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); counter-reset: passo; }
+    .passo {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px;
+    }
+    .passo::before {
+      counter-increment: passo; content: counter(passo);
+      display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+      font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 20px; color: #fff; margin-bottom: 10px;
+    }
+    .passo:nth-child(1)::before { background: var(--coral); }
+    .passo:nth-child(2)::before { background: var(--sol); color: #3a2a00; }
+    .passo:nth-child(3)::before { background: var(--mar); }
+    .passo h3 { margin: 0 0 6px; font-size: 19px; }
+    .passo p { margin: 0; color: var(--muted); font-size: 15.5px; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em;
+      background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px;
+    }
+
+    /* ---------- regras ---------- */
+    .regras {
+      background: var(--sol-soft); border-radius: var(--radius); padding: 24px 26px;
+      display: flex; gap: 18px; align-items: flex-start;
+    }
+    .regras .big { font-size: 40px; line-height: 1; }
+    .regras h3 { margin: 0 0 6px; font-family: "Baloo 2", sans-serif; font-size: 22px; }
+    .regras p { margin: 0; }
+
+    /* ---------- rodapé ---------- */
+    footer {
+      padding: 36px 0 44px; color: var(--muted); font-size: 14px;
+      display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      border-top: 1px solid var(--line); margin-top: 20px;
+    }
+    footer a { font-weight: 700; }
+
+    @media (max-width: 600px) {
+      .top nav a { padding: 8px 9px; font-size: 14px; }
+      .hero { padding-top: 28px; }
+      .regras { flex-direction: column; gap: 8px; }
+      .card { min-height: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .logo .g, .card, .card .go { transition: none; }
+      .logo:hover .g { transform: rotateX(8deg) rotateY(-6deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="mark" href="#"><b>3D</b> Barros</a>
+      <nav aria-label="Seções">
+        <a href="#projetos">Projetos</a>
+        <a href="#como">Como adicionar</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="titulo">
+        <h1 class="logo" id="titulo" aria-label="3D Barros">
+          <span class="g c" aria-hidden="true">3</span><span class="g m" aria-hidden="true">D</span>
+          <span class="word" aria-hidden="true">Barros</span>
+        </h1>
+        <p class="tagline">Três de Barros. Um monte de ideias.</p>
+        <p class="sub">Esta é a casa de tudo o que a gente cria: sites, jogos, robôs, experimentos e invenções. Feito em casa, publicado para o mundo.</p>
+        <div class="trio" aria-label="Somos nós três">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>somos nós 3</span>
+        </div>
+      </section>
+
+      <section id="projetos" aria-labelledby="h-projetos">
+        <h2 id="h-projetos">Projetos</h2>
+        <p class="lead">Tudo o que já saiu da nossa oficina. Clique para abrir.</p>
+        <div class="grid" id="grid"></div>
+      </section>
+
+      <section id="como" aria-labelledby="h-como">
+        <h2 id="h-como">Como colocar um projeto novo aqui</h2>
+        <p class="lead">Três passos e pronto: o projeto aparece neste site.</p>
+        <div class="passos">
+          <article class="passo">
+            <h3>Crie a pasta do projeto</h3>
+            <p>Escolha um nome sem espaço nem acento, como <code>foguete</code>, e salve o <code>index.html</code> dentro dela.</p>
+          </article>
+          <article class="passo">
+            <h3>Anote na lista</h3>
+            <p>Abra o arquivo <code>projetos.js</code>, copie um bloco <code>{ ... }</code> e troque nome, descrição, emoji e link (<code>foguete/</code>).</p>
+          </article>
+          <article class="passo">
+            <h3>Publique</h3>
+            <p>Faça o commit. Em um ou dois minutos o cartão aparece em <code>3dbarros.com.br</code>.</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-regras">
+        <div class="regras">
+          <div class="big" aria-hidden="true">🔒</div>
+          <div>
+            <h3 id="h-regras">Regra da casa</h3>
+            <p>Qualquer pessoa na internet consegue ver este site. Por isso, nos projetos não entra nome completo, telefone, escola, endereço nem senha. Apelido e primeiro nome bastam.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>3dbarros.com.br · feito pelos de Barros</span>
+      <a href="https://github.com/rafaelcruzdebarros/nova">código no GitHub</a>
+    </footer>
+  </div>
+
+  <script src="projetos.js"></script>
+  <script>
+    (function () {
+      var grid = document.getElementById('grid');
+      var lista = (typeof PROJETOS !== 'undefined' && Array.isArray(PROJETOS)) ? PROJETOS : [];
+      var cores = ['coral', 'sol', 'mar'];
+
+      function el(tag, cls, texto) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (texto != null) e.textContent = texto;
+        return e;
+      }
+
+      if (!lista.length) {
+        grid.appendChild(el('p', 'vazio', 'Ainda não tem nenhum projeto por aqui. O primeiro está chegando!'));
+      }
+
+      lista.forEach(function (p, i) {
+        var cor = cores.indexOf(p.cor) >= 0 ? p.cor : cores[i % cores.length];
+        var a = el('a', 'card ' + cor);
+        a.href = p.link || '#';
+        if (/^https?:\/\//.test(a.href)) { a.target = '_blank'; a.rel = 'noopener'; }
+
+        a.appendChild(el('span', 'ico', p.emoji || '★'));
+        a.appendChild(el('h3', null, p.nome || 'Sem nome'));
+        a.appendChild(el('p', null, p.descricao || ''));
+
+        var meta = el('div', 'meta');
+        if (p.quem) meta.appendChild(el('span', null, 'por ' + p.quem));
+        if (p.quando) meta.appendChild(el('span', null, p.quando));
+        if (meta.childNodes.length) a.appendChild(meta);
+
+        var go = el('span', 'go', '→');
+        go.setAttribute('aria-hidden', 'true');
+        a.appendChild(go);
+
+        grid.appendChild(a);
+      });
+
+      var novo = el('a', 'card novo');
+      novo.href = '#como';
+      novo.appendChild(el('span', 'ico', '+'));
+      novo.appendChild(el('h3', null, 'Próximo projeto'));
+      novo.appendChild(el('p', null, 'Esse espaço é seu. Veja como colocar aqui.'));
+      grid.appendChild(novo);
+    })();
+  </script>
+</body>
+</html>
