@@ -1,0 +1,41 @@
+# 3D Barros
+
+Site da família de Barros, publicado em [3dbarros.com.br](https://3dbarros.com.br).
+É a casa de tudo o que nós 3 criamos: sites, jogos, experimentos e ideias.
+
+## Como o site funciona
+
+O GitHub Pages publica a raiz deste repositório. Cada pasta vira um endereço:
+
+| Arquivo / pasta | Endereço |
+| --- | --- |
+| `index.html` | `3dbarros.com.br` (a home) |
+| `projetos.js` | lista dos projetos que aparecem na home |
+| `404.html` | página de endereço errado; volta para a home |
+| `public/` | `3dbarros.com.br/public/` (a Nova) |
+
+## Como adicionar um projeto
+
+1. Crie uma pasta com o nome do projeto, sem espaço nem acento (ex.: `foguete/`),
+   e salve o `index.html` dele lá dentro.
+2. Abra `projetos.js`, copie um bloco `{ ... }` e troque nome, descrição, emoji e
+   link (`foguete/`). Os campos estão explicados no começo do arquivo.
+3. Faça o commit. Em um ou dois minutos o cartão aparece na home.
+
+## Regra da casa
+
+Qualquer pessoa na internet consegue ver este repositório e o site. Nos projetos
+não entra nome completo, telefone, escola, endereço, senha nem chave de API.
+Chaves ficam no arquivo `.env`, que não é versionado.
+
+## Nova
+
+A Nova (`public/`) é uma assistente de IA. A parte visual abre direto pelo site,
+mas as respostas dependem do servidor `server.mjs` rodando com uma chave do
+Gemini no `.env`:
+
+```bash
+npm install
+echo 'GEMINI_API_KEY=sua-chave-aqui' > .env
+npm start
+```
