@@ -59,6 +59,10 @@ p{margin:0;color:var(--mut);font-size:.85rem;text-align:center;max-width:420px;l
 #mb button.up{background:var(--you);border-color:var(--you);color:var(--bg)}
 #mb button.ok{background:var(--ok);border-color:var(--ok);color:var(--bg)}
 .st{font-family:"Chakra Petch",sans-serif;font-size:1.1rem;min-height:1.6em;text-align:center}
+.modo{display:flex;gap:8px}
+.modo button{background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:7px 14px;font-weight:700;font-size:.85rem;cursor:pointer}
+.modo button:hover{color:var(--fg);border-color:var(--fg)}
+.modo button.on{background:var(--you);border-color:var(--you);color:var(--bg)}
 .rs{background:var(--you);color:var(--bg);border:0;border-radius:6px;padding:10px 20px;font-weight:700;cursor:pointer}
 .rs:hover{filter:brightness(1.1)}
 </style>
@@ -70,7 +74,7 @@ p{margin:0;color:var(--mut);font-size:.85rem;text-align:center;max-width:420px;l
   <p>Sete jogos feitos pelo André. Escolha um.</p>
   <div class="menu">
     <button class="card" data-go="s-tenis"><i>🎾</i><b>Tênis</b><small>Contra a CPU</small></button>
-    <button class="card" data-go="s-velha"><i>❌⭕</i><b>Jogo da Velha</b><small>Contra a CPU</small></button>
+    <button class="card" data-go="s-velha"><i>❌⭕</i><b>Jogo da Velha</b><small>CPU ou 2 jogadores</small></button>
     <button class="card" data-go="s-mem"><i>🧠</i><b>Memória</b><small>Ache os pares</small></button>
     <button class="card" data-go="s-circ"><i>🏎️</i><b>Circuito Mortal</b><small>2K · com gamepad</small></button>
     <button class="card" data-go="s-soccer"><i>🥅</i><b>Soccer Star</b><small>1 ou 2 jogadores</small></button>
@@ -91,10 +95,14 @@ p{margin:0;color:var(--mut);font-size:.85rem;text-align:center;max-width:420px;l
 <section class="scr" id="s-velha">
   <button class="back" data-go="s-menu">← Menu</button>
   <h1>Jogo da Velha</h1>
+  <div class="modo" role="group" aria-label="Modo de jogo">
+    <button type="button" data-m="cpu" class="on">Contra a CPU</button>
+    <button type="button" data-m="2p">2 jogadores</button>
+  </div>
   <div class="st" id="vs"></div>
   <div class="grid" id="vb"></div>
   <button class="rs" id="vr">Novo jogo</button>
-  <p>Você é o ❌. A CPU é o ⭕.</p>
+  <p id="vp">Você é o ❌. A CPU é o ⭕.</p>
 </section>
 
 <section class="scr" id="s-mem">
@@ -293,7 +301,12 @@ draw_sb();window.tennis={start(){on=true;prev=performance.now();cTimer=300;reque
 </script>
 <script>
 (function(){
-const el=document.getElementById('vb'),st=document.getElementById('vs');
+const el=document.getElementById('vb'),st=document.getElementById('vs'),vp=document.getElementById('vp');
+// modo: 'cpu' (você é o X, a CPU é o O) ou '2p' (duas pessoas alternam no mesmo aparelho)
+let modo='cpu',vez='X';
+const S={X:'❌',O:'⭕'};
+document.querySelectorAll('#s-velha .modo button').forEach(b=>b.onclick=()=>{
+  modo=b.dataset.m;document.querySelectorAll('#s-velha .modo button').forEach(x=>x.classList.toggle('on',x===b));novo()});
 const LN=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 let B,fim;
 const win=b=>{for(const[a,c,d]of LN)if(b[a]&&b[a]==b[c]&&b[a]==b[d])return b[a];return b.every(Boolean)?'T':null};
@@ -308,14 +321,18 @@ function cpu(){
   for(const i of free){B[i]='O';const v=mm(B,'X');B[i]=null;if(v>bv){bv=v;bi=i}}
   return bi}
 function end(){const w=win(B);if(!w)return false;fim=true;
-  st.textContent=w=='T'?'Empate!':w=='X'?'Você venceu! 🏆':'A CPU venceu';draw();return true}
+  st.textContent=w=='T'?'Empate!':modo=='2p'?S[w]+' venceu! 🏆':w=='X'?'Você venceu! 🏆':'A CPU venceu';draw();return true}
+function vezTxt(){return modo=='2p'?'Vez do '+S[vez]:'Sua vez'}
 function draw(){
   el.innerHTML='';
   B.forEach((v,i)=>{const b=document.createElement('button');
     b.textContent=v=='X'?'❌':v=='O'?'⭕':'';
-    b.onclick=()=>{if(fim||B[i])return;B[i]='X';if(end())return;B[cpu()]='O';if(!end()){st.textContent='Sua vez';draw()}};
+    b.onclick=()=>{if(fim||B[i])return;
+      if(modo=='2p'){B[i]=vez;if(end())return;vez=vez=='X'?'O':'X';st.textContent=vezTxt();draw();return}
+      B[i]='X';if(end())return;B[cpu()]='O';if(!end()){st.textContent='Sua vez';draw()}};
     el.appendChild(b)})}
-function novo(){B=Array(9).fill(null);fim=false;st.textContent='Sua vez';draw()}
+function novo(){B=Array(9).fill(null);fim=false;vez='X';st.textContent=vezTxt();
+  vp.textContent=modo=='2p'?'Duas pessoas no mesmo aparelho: o ❌ começa, depois o ⭕.':'Você é o ❌. A CPU é o ⭕.';draw()}
 document.getElementById('vr').onclick=novo;novo();
 })();
 (function(){
