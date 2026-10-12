@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peças impressas em 3D · 3D Barros</title>
+  <meta name="description" content="Galeria das peças que saíram da impressora 3D da família de Barros.">
+  <meta name="theme-color" content="#ff6b4a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff6b4a'/%3E%3Ctext x='32' y='46' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='38' text-anchor='middle' fill='%23fff'%3E3D%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --coral: #ff6b4a;  --coral-dark: #c23f22;  --coral-soft: #ffe3da;
+      --sol:   #ffc93c;  --sol-dark:   #c48f00;  --sol-soft:   #fff2c2;
+      --mar:   #3d8bff;  --mar-dark:   #1f4fb3;  --mar-soft:   #dbe8ff;
+      --bg: #fff8f1; --surface: #ffffff; --ink: #1f2430; --muted: #67707f; --line: #eadfd4;
+      --shadow: 0 14px 40px rgba(60, 40, 20, .10); --radius: 22px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #14171f; --surface: #1d2230; --ink: #f1f3f8; --muted: #a2abbb; --line: #2c3344;
+        --shadow: 0 14px 40px rgba(0, 0, 0, .45);
+        --coral-soft: #4a2a22; --sol-soft: #45391a; --mar-soft: #1e2d4d;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #14171f; --surface: #1d2230; --ink: #f1f3f8; --muted: #a2abbb; --line: #2c3344;
+      --shadow: 0 14px 40px rgba(0, 0, 0, .45);
+      --coral-soft: #4a2a22; --sol-soft: #45391a; --mar-soft: #1e2d4d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Nunito, system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 17px; line-height: 1.55;
+      color: var(--ink); background: var(--bg);
+      background-image: radial-gradient(circle at 12% 8%, var(--coral-soft) 0, transparent 28%),
+                        radial-gradient(circle at 88% 12%, var(--sol-soft) 0, transparent 26%);
+      background-attachment: fixed;
+    }
+    a { color: inherit; }
+    .wrap { width: min(1080px, 100% - 32px); margin: 0 auto; }
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; gap: 10px; }
+    .top .mark { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; white-space: nowrap; }
+    .top .mark b { color: var(--coral); }
+    .voltar { text-decoration: none; font-weight: 700; font-size: 15px; color: var(--muted); padding: 8px 12px; border-radius: 999px; }
+    .voltar:hover { background: var(--surface); color: var(--ink); }
+
+    .hero { padding: 28px 0 10px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+    .hero svg { width: 86px; height: 86px; flex: none; }
+    h1 { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: clamp(32px, 5vw, 48px); line-height: 1.05; margin: 0; }
+    .lead { color: var(--muted); margin: 6px 0 0; max-width: 560px; }
+
+    .filtros { display: flex; gap: 8px; flex-wrap: wrap; margin: 26px 0 22px; }
+    .filtro {
+      border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: inherit; font-weight: 700; font-size: 14px;
+      padding: 8px 14px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .filtro i { width: 12px; height: 12px; border-radius: 50%; background: var(--c, var(--ink)); display: inline-block; }
+    .filtro.ativo, .filtro:hover { color: var(--ink); border-color: var(--c, var(--ink)); }
+    .filtro.ativo { box-shadow: inset 0 0 0 1px var(--c, var(--ink)); }
+    .coral { --c: var(--coral); --c-dark: var(--coral-dark); }
+    .sol   { --c: var(--sol);   --c-dark: var(--sol-dark); }
+    .mar   { --c: var(--mar);   --c-dark: var(--mar-dark); }
+
+    .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); padding-bottom: 40px; }
+    .peca {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      box-shadow: 0 2px 0 var(--line); display: flex; flex-direction: column; transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .peca:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .foto {
+      display: block; aspect-ratio: 4 / 3; background: var(--bg); border: 0; padding: 0; width: 100%; cursor: zoom-in; font: inherit;
+      border-bottom: 4px solid var(--c, var(--line)); position: relative;
+    }
+    .foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .foto.sem { cursor: default; display: grid; place-items: center; color: var(--muted); font-size: 44px; }
+    .peca .txt { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .peca h2 { margin: 0; font-family: "Baloo 2", sans-serif; font-size: 22px; line-height: 1.1; }
+    .peca p { margin: 0; color: var(--muted); font-size: 15px; flex: 1; }
+    .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+    .meta span { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 6px; }
+    .meta i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); display: inline-block; }
+    .meta a { color: var(--ink); }
+
+    .vazio {
+      border: 2px dashed var(--line); border-radius: var(--radius); padding: 40px 24px; text-align: center; color: var(--muted); grid-column: 1 / -1;
+    }
+    .vazio b { display: block; color: var(--ink); font-family: "Baloo 2", sans-serif; font-size: 24px; margin-bottom: 6px; }
+    .vazio code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+
+    dialog { border: 0; padding: 0; background: transparent; max-width: min(96vw, 1100px); max-height: 94vh; }
+    dialog::backdrop { background: rgba(10, 12, 18, .82); }
+    dialog img { width: min(92vw, 1000px); max-height: 86vh; object-fit: contain; display: block; border-radius: 16px; background: #000; }
+    dialog figcaption { color: #fff; text-align: center; margin-top: 10px; font-weight: 700; }
+    dialog button { position: absolute; top: -6px; right: -6px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #fff; color: var(--ink); font-size: 22px; cursor: pointer; }
+    dialog figure { margin: 0; position: relative; }
+
+    footer { padding: 26px 0 40px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+    @media (max-width: 600px) { .hero svg { width: 64px; height: 64px; } }
+    @media (prefers-reduced-motion: reduce) { .peca { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="mark" href="../"><b>3D</b> Barros</a>
+      <a class="voltar" href="../">← voltar para a home</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="6" width="48" height="52" rx="6"/>
+          <path d="M8 18h48M18 18v8M46 18v8"/>
+          <path d="M18 26h28"/>
+          <path d="M30 26h4v5h-4z" fill="currentColor" stroke="none"/>
+          <path d="M8 46h48"/>
+          <path d="M32 33l8 4v8l-8 4-8-4v-8z"/>
+          <path d="M24 37l8 4 8-4M32 41v8"/>
+        </svg>
+        <div>
+          <h1>Peças impressas em 3D</h1>
+          <p class="lead">O que já saiu da nossa impressora. Clique na foto para ver de perto.</p>
+        </div>
+      </section>
+
+      <div class="filtros" id="filtros" role="group" aria-label="Filtrar por quem fez"></div>
+      <div class="grid" id="grid"></div>
+    </main>
+
+    <footer>3dbarros.com.br · feito pelos de Barros</footer>
+  </div>
+
+  <dialog id="zoom">
+    <figure>
+      <button type="button" id="fechar" aria-label="Fechar">×</button>
+      <img id="zoomImg" alt="">
+      <figcaption id="zoomTxt"></figcaption>
+    </figure>
+  </dialog>
+
+  <script src="../projetos.js"></script>
+  <script src="pecas.js"></script>
+  <script>
+    (function () {
+      var pessoas = (typeof PESSOAS !== 'undefined' && Array.isArray(PESSOAS)) ? PESSOAS : [];
+      var pecas = (typeof PECAS !== 'undefined' && Array.isArray(PECAS)) ? PECAS : [];
+      var cores = ['coral', 'sol', 'mar'];
+      var grid = document.getElementById('grid');
+      var filtros = document.getElementById('filtros');
+      var zoom = document.getElementById('zoom');
+      var zoomImg = document.getElementById('zoomImg');
+      var zoomTxt = document.getElementById('zoomTxt');
+      var atual = 'todas';
+
+      function el(tag, cls, texto) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (texto != null) e.textContent = texto;
+        return e;
+      }
+      function pessoa(id) {
+        id = String(id || '').trim().toLowerCase();
+        for (var i = 0; i < pessoas.length; i++) if (pessoas[i].id === id) {
+          return { nome: pessoas[i].nome, cor: cores.indexOf(pessoas[i].cor) >= 0 ? pessoas[i].cor : cores[i % cores.length] };
+        }
+        return null;
+      }
+
+      function cardPeca(p) {
+        var quem = pessoa(p.quem);
+        var cor = quem ? quem.cor : 'coral';
+        var art = el('article', 'peca ' + cor);
+        if (p.foto) {
+          var btn = el('button', 'foto');
+          btn.type = 'button';
+          var img = el('img');
+          img.src = p.foto; img.alt = p.nome || 'Peça impressa em 3D'; img.loading = 'lazy';
+          btn.appendChild(img);
+          btn.addEventListener('click', function () {
+            zoomImg.src = p.foto; zoomImg.alt = img.alt; zoomTxt.textContent = p.nome || '';
+            zoom.showModal();
+          });
+          art.appendChild(btn);
+        } else {
+          art.appendChild(el('div', 'foto sem', '🧊'));
+        }
+        var txt = el('div', 'txt');
+        txt.appendChild(el('h2', null, p.nome || 'Sem nome'));
+        txt.appendChild(el('p', null, p.descricao || ''));
+        var meta = el('div', 'meta');
+        if (quem) { var q = el('span'); q.appendChild(el('i')); q.appendChild(document.createTextNode(quem.nome)); meta.appendChild(q); }
+        else if (String(p.quem || '').toLowerCase() === 'todos') meta.appendChild(el('span', null, 'os 3'));
+        if (p.material) meta.appendChild(el('span', null, p.material));
+        if (p.quando) meta.appendChild(el('span', null, p.quando));
+        if (p.modelo) { var m = el('span'); var a = el('a', null, 'modelo 3D'); a.href = p.modelo; a.target = '_blank'; a.rel = 'noopener'; m.appendChild(a); meta.appendChild(m); }
+        if (meta.childNodes.length) txt.appendChild(meta);
+        art.appendChild(txt);
+        return art;
+      }
+
+      function render() {
+        grid.innerHTML = '';
+        var lista = pecas.filter(function (p) {
+          return atual === 'todas' || String(p.quem || '').trim().toLowerCase() === atual;
+        });
+        if (!lista.length) {
+          var v = el('div', 'vazio');
+          v.appendChild(el('b', null, pecas.length ? 'Nada por aqui ainda' : 'Nenhuma peça ainda'));
+          var t = el('span', null, pecas.length ? 'Essa pessoa ainda não cadastrou peça nenhuma.' : 'Tire uma foto da primeira peça, salve em ');
+          v.appendChild(t);
+          if (!pecas.length) { v.appendChild(el('code', null, 'pecas/fotos/')); v.appendChild(document.createTextNode(' e anote em ')); v.appendChild(el('code', null, 'pecas/pecas.js')); v.appendChild(document.createTextNode('.')); }
+          grid.appendChild(v);
+          return;
+        }
+        lista.forEach(function (p) { grid.appendChild(cardPeca(p)); });
+      }
+
+      function filtro(id, nome, cor) {
+        var b = el('button', 'filtro' + (cor ? ' ' + cor : ''));
+        b.type = 'button';
+        if (cor) b.appendChild(el('i'));
+        b.appendChild(document.createTextNode(nome));
+        b.dataset.id = id;
+        b.addEventListener('click', function () {
+          atual = id;
+          Array.prototype.forEach.call(filtros.children, function (c) { c.classList.toggle('ativo', c.dataset.id === id); });
+          render();
+        });
+        filtros.appendChild(b);
+      }
+      filtro('todas', 'Todas', null);
+      pessoas.forEach(function (ps, i) { filtro(ps.id, ps.nome, cores.indexOf(ps.cor) >= 0 ? ps.cor : cores[i % cores.length]); });
+      filtros.firstChild.classList.add('ativo');
+
+      document.getElementById('fechar').addEventListener('click', function () { zoom.close(); });
+      zoom.addEventListener('click', function (e) { if (e.target === zoom) zoom.close(); });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
