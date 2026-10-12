@@ -14,14 +14,21 @@ O GitHub Pages publica a raiz deste repositório. Cada pasta vira um endereço:
 | `projetos.js` | as 3 pessoas e a lista dos projetos que aparecem na home |
 | `pecas/` | `3dbarros.com.br/pecas/`, a galeria das peças impressas em 3D |
 | `pecas/pecas.js` | lista das peças; as fotos ficam em `pecas/fotos/` |
+| `andre/arcade/` | o Arcade do André, com os jogos dele (cópia de andrecruzdebarros/jogos) |
+| `site.css` | o visual do site (home, galeria e 404) |
 | `404.html` | página de endereço errado; volta para a home |
 | `public/` | `3dbarros.com.br/public/` (a Nova) |
 
 ## As 3 seções
 
-A home tem uma seção para cada um: Matheus, Rafael e André, cada um com a sua
-cor. O projeto aparece na seção de quem fez, conforme o campo `quem`. Projeto
-feito em família (`quem: "todos"`) entra em "Feito pelos 3".
+A home é um portfólio com uma seção para cada um: Matheus, Rafael e André, cada
+um com a sua cor. O projeto aparece na seção de quem fez, conforme o campo
+`quem`. Projeto feito em família (`quem: "todos"`) entra em "Feito pelos três".
+
+O Arcade do André (`andre/arcade/`) é uma cópia do repositório
+`andrecruzdebarros/jogos`, com um script no fim que abre um jogo direto pelo
+endereço (`#s-tenis`). Para atualizar, copie o `index.html` de lá por cima e
+recoloque esse script.
 
 ## Peças impressas em 3D
 

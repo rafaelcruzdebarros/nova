@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arcade</title>
+<style>
+
+:root{--bg:#f1f4ef;--fg:#18261d;--card:#fff;--mut:#5b6b60;--you:#1f5fbf;--cpu:#d9622b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a14;--fg:#e8efe9;--card:#1a2a20;--mut:#93a89a}}
+:root[data-theme="dark"]{--bg:#101a14;--fg:#e8efe9;--card:#1a2a20;--mut:#93a89a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Trebuchet MS",system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px}
+h1{margin:0;font-size:1.3rem;letter-spacing:.02em}
+.sb{width:100%;max-width:420px;background:var(--card);border-radius:10px;padding:8px 14px;display:grid;grid-template-columns:1fr auto auto;gap:4px 18px;align-items:center;font-size:1rem}
+.sb span.h{color:var(--mut);font-size:.8rem;text-align:center}
+.sb b{text-align:center;min-width:2.2em;font-variant-numeric:tabular-nums}
+.sb .n::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;background:var(--c)}
+canvas{height:calc(100dvh - 240px);min-height:300px;max-height:700px;width:auto;max-width:100%;aspect-ratio:3/5;border-radius:10px;touch-action:none;display:block;cursor:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{overscroll-behavior:none}
+.tc{display:none}
+@media (pointer:coarse){.pc{display:none}.tc{display:block}h1{font-size:1.1rem}body{padding:8px;gap:6px}}
+p{margin:0;color:var(--mut);font-size:.85rem;text-align:center;max-width:420px}
+
+.scr{display:none;width:100%;flex-direction:column;align-items:center;gap:10px}
+.scr.on{display:flex}
+.back{align-self:flex-start;background:var(--card);color:var(--fg);border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:420px}
+.card{background:var(--card);color:var(--fg);border:2px solid transparent;border-radius:14px;padding:18px 10px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .12s,border-color .12s}
+.card:hover,.card:focus-visible{transform:translateY(-3px);border-color:var(--you);outline:0}
+.card i{font-style:normal;font-size:2.6rem}
+.card b{font-size:1.05rem}
+.card small{color:var(--mut)}
+.grid{display:grid;gap:8px;width:100%;max-width:360px}
+.grid button{aspect-ratio:1;border:0;border-radius:12px;background:var(--card);color:var(--fg);font-size:2.2rem;font-weight:bold;cursor:pointer}
+#vb{grid-template-columns:repeat(3,1fr)}
+#mb{grid-template-columns:repeat(4,1fr)}
+#mb button.up{background:var(--you)}
+#mb button.ok{background:#2c7a4b}
+.st{font-size:1.1rem;min-height:1.6em;text-align:center}
+.rs{background:var(--you);color:#fff;border:0;border-radius:8px;padding:8px 18px;font:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<section class="scr on" id="s-menu">
+  <h1 style="font-size:1.8rem">Arcade 🎮</h1>
+  <p>Escolha um jogo</p>
+  <div class="menu">
+    <button class="card" data-go="s-tenis"><i>🎾</i><b>Tênis</b><small>Contra a CPU</small></button>
+    <button class="card" data-go="s-velha"><i>❌⭕</i><b>Jogo da Velha</b><small>Contra a CPU</small></button>
+    <button class="card" data-go="s-mem"><i>🧠</i><b>Memória</b><small>Ache os pares</small></button>
+    <button class="card" data-go="s-circ"><i>🏎️</i><b>Circuito Mortal</b><small>2K · com gamepad</small></button>
+    <button class="card" data-go="s-soccer"><i>🥅</i><b>Soccer Star</b><small>1 ou 2 jogadores</small></button>
+    <button class="card" data-go="s-hoquei"><i>🏒</i><b>Hóquei de Mesa</b><small>Contra a CPU</small></button>
+    <button class="card" data-go="s-luta"><i>🥊</i><b>Luta</b><small>Contra a CPU</small></button>
+  </div>
+</section>
+
+<section class="scr" id="s-tenis">
+  <button class="back" data-go="s-menu">← Menu</button>
+<h1>Tênis 🎾</h1>
+<div class="sb" id="sb"></div>
+<canvas id="c" width="360" height="600"></canvas>
+<p class="tc">Arraste o dedo em qualquer lugar da quadra para mover a raquete. Toque para sacar. Vence quem fizer 3 games.</p>
+<p class="pc">Mova a raquete com o mouse, o dedo, ← → ou o analógico/direcional do controle. Saque com clique, toque, Espaço ou o botão A (X no PlayStation). Se o controle não responder, aperte um botão para ele ser reconhecido. Quem fizer 3 games vence.</p>
+</section>
+
+<section class="scr" id="s-velha">
+  <button class="back" data-go="s-menu">← Menu</button>
+  <h1>Jogo da Velha</h1>
+  <div class="st" id="vs"></div>
+  <div class="grid" id="vb"></div>
+  <button class="rs" id="vr">Novo jogo</button>
+  <p>Você é o ❌. A CPU é o ⭕.</p>
+</section>
+
+<section class="scr" id="s-mem">
+  <button class="back" data-go="s-menu">← Menu</button>
+  <h1>Memória</h1>
+  <div class="st" id="ms"></div>
+  <div class="grid" id="mb"></div>
+  <button class="rs" id="mr">Novo jogo</button>
+</section>
+
+<style>
+#cf{aspect-ratio:5/3;height:auto;width:100%;max-width:520px;min-height:0}
+.pad{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pad button{background:var(--card);color:var(--fg);border:0;border-radius:12px;padding:14px 20px;font:inherit;font-size:1.3rem;touch-action:none;-webkit-user-select:none;user-select:none}
+.pad button:active{background:var(--you);color:#fff}
+</style>
+<section class="scr" id="s-circ">
+  <button class="back" data-go="s-menu">← Menu</button>
+  <iframe id="fcirc" title="Circuito Mortal 2K" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:0;border-radius:10px;background:#05050a"></iframe>
+</section>
+<section class="scr" id="s-soccer">
+  <button class="back" data-go="s-menu">← Menu</button>
+  <iframe id="fsoccer" title="Soccer Star" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:0;border-radius:10px;background:#0e2a1a"></iframe>
+</section>
+<section class="scr" id="s-hoquei">
+  <button class="back" data-go="s-menu">← Menu</button>
+  <iframe id="fhoquei" title="Hóquei de Mesa" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:0;border-radius:10px;background:#0d1b2a"></iframe>
+</section>
+<section class="scr" id="s-luta">
+  <button class="back" data-go="s-menu">← Menu</button>
+  <h1>Luta 🥊</h1>
+  <canvas id="cf" width="400" height="240"></canvas>
+  <div class="pad"><button data-k="l">◀</button><button data-k="r">▶</button><button data-k="p">👊 Soco</button><button data-k="blk">🛡️ Defesa</button></div>
+  <p>Teclado: ← → andam, Espaço soca, K defende.</p>
+</section>
+<script>
+window.GM={};
+function show(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id==id));
+  for(const k in GM)GM[k].stop();GM[id]&&GM[id].start();
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+</script>
+<script>
+(function(){
+let on=false;
+
+const cv=document.getElementById('c'),g=cv.getContext('2d');
+const W=360,H=600,L=50,R=310,PY=548,CY=52,PW=64,TOP=40,BOT=560;
+let px=180,tx=180,cx=180,cerr=0,kx=0;
+let b={x:180,y:PY-14,vx:0,vy:0},sp=6.5,sy=0,ty=0,last='p';
+let st='serve',server='p',msg='',msgT=0,cTimer=0;
+let pts={p:0,c:0},games={p:0,c:0},over=false;
+const rnd=(a,z)=>a+Math.random()*(z-a),cl=(v,a,z)=>Math.max(a,Math.min(z,v));
+const lab=['0','15','30','40'];
+function score(){
+  const a=pts.p,c=pts.c;
+  if(a>=3&&c>=3){return a==c?['40','40']:a>c?['Vant.','40']:['40','Vant.']}
+  return [lab[a],lab[c]];
+}
+function draw_sb(){
+  const s=score();
+  document.getElementById('sb').innerHTML=
+  `<span></span><span class="h">games</span><span class="h">ponto</span>
+   <span class="n" style="--c:var(--you)">Você</span><b>${games.p}</b><b>${s[0]}</b>
+   <span class="n" style="--c:var(--cpu)">CPU</span><b>${games.c}</b><b>${s[1]}</b>`;
+}
+function say(t,ms=1100){msg=t;msgT=ms}
+function point(w){
+  const o=w=='p'?'c':'p';
+  pts[w]++;
+  say(w=='p'?'Ponto seu!':'Ponto da CPU');
+  if(pts[w]>=4&&pts[w]-pts[o]>=2){
+    games[w]++;pts={p:0,c:0};server=server=='p'?'c':'p';
+    if(games[w]>=3){over=true;msg=w=='p'?'Você venceu! 🏆':'A CPU venceu';msgT=1e9;}
+    else say(w=='p'?'Game seu!':'Game da CPU',1500);
+  }
+  draw_sb();
+  st=over?'over':'serve';cTimer=1100;
+  if(!over)resetBall();
+}
+function resetBall(){b.vx=b.vy=0;sy=0}
+function serve(who){
+  sp=6.5;last=who;st='play';
+  if(who=='p'){b.vy=-sp;b.vx=rnd(-1.2,1.2);sy=b.y;ty=CY}
+  else{b.vy=sp;b.vx=rnd(-1.2,1.2);sy=b.y;ty=PY;cerr=rnd(-30,30)}
+}
+function act(){if(!on)return;
+  if(st=='over'){pts={p:0,c:0};games={p:0,c:0};over=false;msg='';msgT=0;server='p';st='serve';draw_sb();return}
+  if(st=='serve'&&server=='p'&&cTimer<=0)serve('p');
+}
+let dx0=0,tx0=0,drag=false;
+cv.addEventListener('pointerdown',e=>{
+  if(e.pointerType=='mouse')move(e);
+  else{dx0=e.clientX;tx0=tx;drag=true;cv.setPointerCapture(e.pointerId)}
+  act();
+});
+cv.addEventListener('pointerup',()=>drag=false);
+cv.addEventListener('pointercancel',()=>drag=false);
+cv.addEventListener('pointermove',move);
+function move(e){
+  const r=cv.getBoundingClientRect();
+  if(e.pointerType=='mouse')tx=(e.clientX-r.left)/r.width*W;
+  else if(drag)tx=cl(tx0+(e.clientX-dx0)/r.width*W*1.6,L-10,R+10);
+}
+addEventListener('keydown',e=>{
+  if(e.key=='ArrowLeft')kx=-1;if(e.key=='ArrowRight')kx=1;
+  if(e.key==' '&&on){e.preventDefault();act()}
+});
+addEventListener('keyup',e=>{if(e.key=='ArrowLeft'&&kx<0||e.key=='ArrowRight'&&kx>0)kx=0});
+
+let gpA=false,gpOn=false;
+function pad(dt){
+  const pads=(navigator.getGamepads?navigator.getGamepads():[])||[];
+  const gp=[...pads].find(p=>p&&p.connected);
+  if(!gp){gpOn=false;return}
+  gpOn=true;
+  let ax=gp.axes[0]||0;
+  if(Math.abs(ax)<.15)ax=0;
+  const bt=i=>gp.buttons[i]&&gp.buttons[i].pressed;
+  if(bt(14))ax=-1;if(bt(15))ax=1;
+  if(ax)tx=cl(tx+ax*10*dt,L,R);
+  const a=bt(0)||bt(1)||bt(2)||bt(3)||bt(9);
+  if(a&&!gpA)act();
+  gpA=a;
+}
+function update(dt){
+  pad(dt);
+  if(kx)tx=cl(tx+kx*9*dt,L,R);
+  px+=cl(tx-px,-11*dt,11*dt);px=cl(px,L-10,R+10);
+  if(msgT>0&&msgT<1e8)msgT-=16*dt;
+  if(cTimer>0)cTimer-=16*dt;
+  if(st=='serve'){
+    b.x=server=='p'?px:cx;b.y=server=='p'?PY-14:CY+14;
+    cx+=cl(180-cx,-2*dt,2*dt);
+    if(server=='c'&&cTimer<=0)serve('c');
+    return;
+  }
+  if(st!='play'){return}
+  // CPU
+  const goal=b.vy<0?b.x+cerr:180, cs=3.6+games.p*0.15;
+  cx+=cl(goal-cx,-cs*dt,cs*dt);cx=cl(cx,L-10,R+10);
+  b.x+=b.vx*dt;b.y+=b.vy*dt;
+  if(b.x<L-6||b.x>R+6){point(last=='p'?'c':'p');return}
+  // jogador
+  if(b.vy>0&&b.y>=PY-10&&b.y<=PY+12&&Math.abs(b.x-px)<=PW/2+8){
+    sp=Math.min(sp*1.05,11);b.vy=-sp;b.vx=cl((b.x-px)*0.13,-4.5,4.5);
+    last='p';sy=b.y;ty=CY;cerr=rnd(-38,38);
+  }else if(b.vy>0&&b.y>BOT){point('c');return}
+  // CPU rebate
+  if(b.vy<0&&b.y<=CY+10&&b.y>=CY-12&&Math.abs(b.x-cx)<=PW/2+8){
+    sp=Math.min(sp*1.05,11);b.vy=sp;
+    const dir=px<180?1:-1;b.vx=cl(dir*rnd(0.4,3.4)+rnd(-.8,.8),-4.5,4.5);
+    last='c';sy=b.y;ty=PY;
+  }else if(b.vy<0&&b.y<TOP){point('p');return}
+}
+function racket(x,y,c){
+  g.fillStyle=c;g.beginPath();g.roundRect(x-PW/2,y-5,PW,10,5);g.fill();
+  g.fillStyle='rgba(255,255,255,.55)';g.fillRect(x-PW/2+6,y-2,PW-12,2);
+}
+function render(){
+  g.fillStyle='#2c7a4b';g.fillRect(0,0,W,H);
+  g.fillStyle='#34875a';for(let i=0;i<H;i+=60)g.fillRect(0,i,W,30);
+  g.strokeStyle='#fff';g.lineWidth=3;
+  g.strokeRect(L,TOP+10,R-L,BOT-TOP-20);
+  g.beginPath();g.moveTo(L,H/2-130);g.lineTo(R,H/2-130);g.moveTo(L,H/2+130);g.lineTo(R,H/2+130);
+  g.moveTo(W/2,H/2-130);g.lineTo(W/2,H/2+130);g.stroke();
+  // rede
+  g.fillStyle='rgba(0,0,0,.25)';g.fillRect(L-14,H/2+3,R-L+28,6);
+  g.fillStyle='#f4f4f4';g.fillRect(L-14,H/2-3,R-L+28,6);
+  g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=1;
+  for(let x=L-14;x<=R+14;x+=8){g.beginPath();g.moveTo(x,H/2-3);g.lineTo(x,H/2+3);g.stroke()}
+  racket(cx,CY,'#d9622b');racket(px,PY,'#1f5fbf');
+  // bola
+  let z=0;
+  if(st=='play'&&sy!=ty){const p=cl((b.y-sy)/(ty-sy),0,1);z=4*p*(1-p)*38}
+  g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(b.x,b.y+3,7-z*.03,4,0,0,7);g.fill();
+  g.fillStyle='#d9f13a';g.beginPath();g.arc(b.x,b.y-z,7+z*.06,0,7);g.fill();
+  g.strokeStyle='#fff';g.lineWidth=1.3;g.beginPath();g.arc(b.x,b.y-z,5+z*.05,-.6,.9);g.stroke();
+  // mensagens
+  let t=msgT>0?msg:'';
+  if(!t&&st=='serve'&&server=='p'&&cTimer<=0)t='Toque ou Espaço para sacar';
+  if(t){
+    g.font='bold 22px "Trebuchet MS",sans-serif';g.textAlign='center';
+    const w=g.measureText(t).width+32;
+    g.fillStyle='rgba(16,26,20,.78)';g.beginPath();g.roundRect(W/2-w/2,H/2-60,w,44,10);g.fill();
+    g.fillStyle='#fff';g.fillText(t,W/2,H/2-30);
+    if(over){g.font='15px "Trebuchet MS",sans-serif';g.fillStyle='#fff';g.fillText('Toque para jogar de novo',W/2,H/2+4)}
+  }
+}
+let prev=performance.now();
+function loop(n){if(!on)return;const dt=Math.min((n-prev)/16.67,2.5);prev=n;update(dt);render();requestAnimationFrame(loop)}
+draw_sb();window.tennis={start(){on=true;prev=performance.now();cTimer=300;requestAnimationFrame(loop)},stop(){on=false}};
+
+})();
+</script>
+<script>
+(function(){
+const el=document.getElementById('vb'),st=document.getElementById('vs');
+const LN=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+let B,fim;
+const win=b=>{for(const[a,c,d]of LN)if(b[a]&&b[a]==b[c]&&b[a]==b[d])return b[a];return b.every(Boolean)?'T':null};
+function mm(b,p){const w=win(b);if(w)return w=='O'?1:w=='X'?-1:0;
+  let best=p=='O'?-2:2;
+  for(let i=0;i<9;i++)if(!b[i]){b[i]=p;const v=mm(b,p=='O'?'X':'O');b[i]=null;best=p=='O'?Math.max(best,v):Math.min(best,v)}
+  return best}
+function cpu(){
+  const free=[...B.keys()].filter(i=>!B[i]);
+  if(Math.random()<.2)return free[Math.floor(Math.random()*free.length)];
+  let bi=free[0],bv=-2;
+  for(const i of free){B[i]='O';const v=mm(B,'X');B[i]=null;if(v>bv){bv=v;bi=i}}
+  return bi}
+function end(){const w=win(B);if(!w)return false;fim=true;
+  st.textContent=w=='T'?'Empate!':w=='X'?'Você venceu! 🏆':'A CPU venceu';draw();return true}
+function draw(){
+  el.innerHTML='';
+  B.forEach((v,i)=>{const b=document.createElement('button');
+    b.textContent=v=='X'?'❌':v=='O'?'⭕':'';
+    b.onclick=()=>{if(fim||B[i])return;B[i]='X';if(end())return;B[cpu()]='O';if(!end()){st.textContent='Sua vez';draw()}};
+    el.appendChild(b)})}
+function novo(){B=Array(9).fill(null);fim=false;st.textContent='Sua vez';draw()}
+document.getElementById('vr').onclick=novo;novo();
+})();
+(function(){
+const el=document.getElementById('mb'),st=document.getElementById('ms');
+const E=['🎾','🏀','⚽','🏐','🎱','🏓','🥎','🏈'];
+let C,open,lock,moves,found;
+function novo(){
+  C=[...E,...E].sort(()=>Math.random()-.5);open=[];lock=false;moves=0;found=0;
+  st.textContent='Jogadas: 0';el.innerHTML='';
+  C.forEach((e,i)=>{const b=document.createElement('button');b.onclick=()=>flip(i,b);el.appendChild(b)})}
+function flip(i,b){
+  if(lock||b.classList.contains('up')||b.classList.contains('ok'))return;
+  b.classList.add('up');b.textContent=C[i];open.push([i,b]);
+  if(open.length<2)return;
+  moves++;lock=true;
+  const[[i1,b1],[i2,b2]]=open;
+  if(C[i1]==C[i2]){[b1,b2].forEach(x=>{x.classList.replace('up','ok')});found++;open=[];lock=false;
+    st.textContent=found==8?`Você ganhou em ${moves} jogadas! 🏆`:'Jogadas: '+moves}
+  else{st.textContent='Jogadas: '+moves;
+    setTimeout(()=>{[b1,b2].forEach(x=>{x.classList.remove('up');x.textContent=''});open=[];lock=false},800)}
+}
+document.getElementById('mr').onclick=novo;novo();
+})();
+</script>
+<script>
+(function(){
+GM['s-tenis']=tennis;
+const K={},PK={};let act=null;
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();K[k]=1;if(act&&[' ','arrowleft','arrowright','arrowup','arrowdown'].includes(k))e.preventDefault()});
+addEventListener('keyup',e=>{K[e.key.toLowerCase()]=0});
+document.querySelectorAll('[data-k]').forEach(b=>{const k=b.dataset.k;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();K[k]=1});
+  ['pointerup','pointerleave','pointercancel'].forEach(t=>b.addEventListener(t,()=>K[k]=0))});
+const E=k=>K[k]&&!PK[k];
+const lf=(upd,name)=>{let on=false,prev=0;
+  const f=n=>{if(!on)return;const dt=Math.min((n-prev)/16.67,2.5);prev=n;upd(dt);for(const k in K)PK[k]=K[k];requestAnimationFrame(f)};
+  return{start(){on=true;act=name;prev=performance.now();requestAnimationFrame(f)},stop(){on=false;if(act==name)act=null}}};
+const rnd=(a,z)=>a+Math.random()*(z-a),cl=(v,a,z)=>Math.max(a,Math.min(z,v));
+const joy=(cv,tap)=>{const j={x:0,y:0,on:0,sx:0,sy:0};
+  cv.addEventListener('pointerdown',e=>{j.on=1;j.sx=e.clientX;j.sy=e.clientY;j.x=j.y=0;cv.setPointerCapture(e.pointerId);tap&&tap()});
+  cv.addEventListener('pointermove',e=>{if(j.on){j.x=e.clientX-j.sx;j.y=e.clientY-j.sy}});
+  ['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,()=>{j.on=0;j.x=j.y=0}));return j};
+const T=(g,t,x,y,s=22,c='#fff')=>{g.font=`bold ${s}px "Trebuchet MS",sans-serif`;g.textAlign='center';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.65)';g.strokeText(t,x,y);g.fillStyle=c;g.fillText(t,x,y)};
+
+/* ---------- Circuito Mortal 2K (jogo original, em iframe) ---------- */
+(function(){
+const SRC="<!DOCTYPE html>\n<html lang=\"pt-BR\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Circuito Mortal 2K - Edi\u00e7\u00e3o Gamepad<\/title>\n  <script src=\"https://cdn.tailwindcss.com\"><\/script>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');\n\n    body {\n      background-color: #05050a;\n      color: #ffffff;\n      font-family: 'Rajdhani', sans-serif;\n      overflow: hidden;\n      user-select: none;\n    }\n\n    .font-orbitron {\n      font-family: 'Orbitron', sans-serif;\n    }\n\n    canvas {\n      background-color: #0b0b12;\n      box-shadow: 0 0 50px rgba(0, 240, 255, 0.15), inset 0 0 100px rgba(0, 0, 0, 0.8);\n    }\n\n    .neon-button {\n      background: linear-gradient(135deg, #ff0055 0%, #ff5500 100%);\n      box-shadow: 0 0 25px rgba(255, 0, 85, 0.6);\n      transition: all 0.2s ease-in-out;\n    }\n\n    .neon-button:hover {\n      transform: scale(1.08);\n      box-shadow: 0 0 40px rgba(255, 0, 85, 0.9);\n      filter: brightness(1.2);\n    }\n\n    .neon-button:active {\n      transform: scale(0.95);\n    }\n  <\/style>\n<\/head>\n<body class=\"min-h-screen flex flex-col items-center justify-center p-2 sm:p-4\">\n\n  <!-- Header & Status UI -->\n  <header class=\"w-full max-w-6xl flex flex-col sm:flex-row items-center justify-between bg-slate-900/80 border border-cyan-500/30 rounded-xl p-3 sm:p-4 mb-3 backdrop-blur-md gap-2\">\n    <div class=\"flex items-center gap-3\">\n      <h1 class=\"font-orbitron font-black text-xl sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500 tracking-wider\">\n        CIRCUITO MORTAL <span class=\"text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded\">2K<\/span>\n      <\/h1>\n      <!-- Indicador de Gamepad -->\n      <div id=\"gamepad-status\" class=\"flex items-center gap-1.5 px-3 py-1 bg-slate-800/80 border border-slate-700 rounded-full text-xs font-semibold text-slate-400\">\n        <span id=\"gamepad-dot\" class=\"w-2.5 h-2.5 rounded-full bg-slate-600\"><\/span>\n        <span id=\"gamepad-text\">TECLADO/MOUSE<\/span>\n      <\/div>\n    <\/div>\n\n    <div id=\"status-box\" class=\"font-semibold text-center my-1 sm:my-0 text-sm sm:text-base text-yellow-400 animate-pulse\">\n      D\u00ca A VOLTA NA TELA PASSANDO NOS 4 CANTOS!\n    <\/div>\n\n    <div class=\"flex items-center gap-6 font-orbitron\">\n      <div class=\"text-right\">\n        <span class=\"text-xs text-slate-400 block uppercase tracking-widest\">Abates<\/span>\n        <span id=\"score\" class=\"text-2xl font-bold text-cyan-400\">0<\/span>\n      <\/div>\n    <\/div>\n  <\/header>\n\n  <!-- Game Canvas & Overlay Screen -->\n  <div class=\"relative w-full max-w-6xl aspect-video flex items-center justify-center\">\n    <canvas id=\"gameCanvas\" width=\"2560\" height=\"1440\" class=\"w-full h-full rounded-2xl border-2 border-slate-800\"><\/canvas>\n\n    <!-- Overlay Game Over -->\n    <div id=\"game-over-screen\" class=\"hidden absolute inset-0 bg-black/85 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center z-20 p-6\">\n      <h2 class=\"font-orbitron font-black text-4xl sm:text-6xl text-red-500 tracking-widest drop-shadow-[0_0_25px_rgba(255,0,0,0.8)] mb-2 text-center\">\n        CIRCUITO INTERROMPIDO!\n      <\/h2>\n      <p class=\"text-slate-300 text-lg sm:text-xl font-medium mb-6 text-center\">\n        Voc\u00ea foi alcan\u00e7ado pelas criaturas antes de concluir sua miss\u00e3o.\n      <\/p>\n\n      <div class=\"bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 px-8 mb-8 text-center font-orbitron\">\n        <span class=\"text-xs text-slate-400 uppercase tracking-widest block mb-1\">Pontua\u00e7\u00e3o Final<\/span>\n        <span id=\"final-score\" class=\"text-4xl font-extrabold text-cyan-400\">0<\/span>\n        <span class=\"text-slate-400 text-sm\"> MONSTROS ELIMINADOS<\/span>\n      <\/div>\n\n      <!-- Bot\u00e3o Renascer -->\n      <button id=\"btn-respawn\" class=\"neon-button font-orbitron font-black text-xl sm:text-2xl text-white px-10 py-4 rounded-xl tracking-wider cursor-pointer flex items-center gap-3\">\n        <svg class=\"w-7 h-7 fill-current\" viewBox=\"0 0 24 24\">\n          <path d=\"M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z\"/>\n        <\/svg>\n        RENASCER (A / START)\n      <\/button>\n    <\/div>\n  <\/div>\n\n  <!-- Controles Footer -->\n  <footer class=\"w-full max-w-6xl mt-3 flex flex-wrap items-center justify-between text-xs text-slate-400 px-2 gap-2\">\n    <div>\ud83d\udd79\ufe0f <b>Controle:<\/b> Anal\u00f3gico Esq. (Mover) | Anal\u00f3gico Dir. (Mirar) | RT/R1/A (Atirar)<\/div>\n    <div>\u2328\ufe0f <b>Teclado/Mouse:<\/b> WASD/Setas (Mover) | Mouse (Mirar/Atirar)<\/div>\n    <div>\ud83c\udf00 <b>Portal Pac-Man:<\/b> Atravessar a parede faz voc\u00ea sair no lado oposto<\/div>\n  <\/footer>\n\n  <!-- Logic Code -->\n  <script>\n    const canvas = document.getElementById('gameCanvas');\n    const ctx = canvas.getContext('2d');\n\n    const statusEl = document.getElementById('status-box');\n    const scoreEl = document.getElementById('score');\n    const finalScoreEl = document.getElementById('final-score');\n    const gameOverScreen = document.getElementById('game-over-screen');\n    const btnRespawn = document.getElementById('btn-respawn');\n    const gamepadDot = document.getElementById('gamepad-dot');\n    const gamepadText = document.getElementById('gamepad-text');\n\n    // Web Audio Synthesizer para Efeitos Sonoros\n    let audioCtx = null;\n    function initAudio() {\n      if (!audioCtx) {\n        audioCtx = new (window.AudioContext || window.webkitAudioContext)();\n      }\n    }\n\n    function playSound(type) {\n      if (!audioCtx) return;\n      try {\n        const osc = audioCtx.createOscillator();\n        const gain = audioCtx.createGain();\n        osc.connect(gain);\n        gain.connect(audioCtx.destination);\n\n        const now = audioCtx.currentTime;\n        if (type === 'shoot') {\n          osc.type = 'sawtooth';\n          osc.frequency.setValueAtTime(800, now);\n          osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);\n          gain.gain.setValueAtTime(0.2, now);\n          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);\n          osc.start(now);\n          osc.stop(now + 0.1);\n        } else if (type === 'explosion') {\n          osc.type = 'square';\n          osc.frequency.setValueAtTime(150, now);\n          osc.frequency.exponentialRampToValueAtTime(30, now + 0.2);\n          gain.gain.setValueAtTime(0.3, now);\n          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);\n          osc.start(now);\n          osc.stop(now + 0.2);\n        } else if (type === 'checkpoint') {\n          osc.type = 'sine';\n          osc.frequency.setValueAtTime(523.25, now);\n          osc.frequency.setValueAtTime(659.25, now + 0.08);\n          gain.gain.setValueAtTime(0.2, now);\n          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);\n          osc.start(now);\n          osc.stop(now + 0.2);\n        } else if (type === 'weapon') {\n          osc.type = 'triangle';\n          osc.frequency.setValueAtTime(440, now);\n          osc.frequency.exponentialRampToValueAtTime(880, now + 0.25);\n          gain.gain.setValueAtTime(0.3, now);\n          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);\n          osc.start(now);\n          osc.stop(now + 0.25);\n        }\n      } catch (e) {}\n    }\n\n    // Vari\u00e1veis do Estado do Jogo\n    let score = 0;\n    let gameOver = false;\n    let hasWeapon = false;\n    let weaponOnField = null;\n    let spawnInterval = null;\n    let lastShootTime = 0;\n    let shootCooldown = 150; // ms entre tiros no controle ao segurar bot\u00e3o\n\n    // Checkpoints da volta\n    let corners = [];\n    let nextCornerIndex = 0;\n\n    // Teclas, Mouse e Gamepad\n    const keys = {};\n    const mouse = { x: canvas.width / 2, y: canvas.height / 2 };\n    let isGamepadConnected = false;\n    let gamepadIndex = null;\n    let lastGamepadRespawnPressed = false;\n\n    // Jogador\n    const player = {\n      x: canvas.width / 2,\n      y: canvas.height / 2,\n      radius: 28,\n      speed: 13,\n      angle: 0,\n      color: '#00f0ff'\n    };\n\n    let monsters = [];\n    let bullets = [];\n    let particles = [];\n\n    function initCorners() {\n      const margin = 260;\n      corners = [\n        { id: 1, x: margin, y: margin, radius: 160, reached: false, label: \"1\u00ba CANTO (Sup. Esq.)\" },\n        { id: 2, x: canvas.width - margin, y: margin, radius: 160, reached: false, label: \"2\u00ba CANTO (Sup. Dir.)\" },\n        { id: 3, x: canvas.width - margin, y: canvas.height - margin, radius: 160, reached: false, label: \"3\u00ba CANTO (Inf. Dir.)\" },\n        { id: 4, x: margin, y: canvas.height - margin, radius: 160, reached: false, label: \"4\u00ba CANTO (Inf. Esq.)\" }\n      ];\n      nextCornerIndex = 0;\n    }\n\n    function resetGame() {\n      score = 0;\n      gameOver = false;\n      hasWeapon = false;\n      weaponOnField = null;\n      monsters = [];\n      bullets = [];\n      particles = [];\n\n      player.x = canvas.width / 2;\n      player.y = canvas.height / 2;\n      player.angle = 0;\n\n      scoreEl.innerText = '0';\n      statusEl.innerText = 'D\u00ca A VOLTA NA TELA PASSANDO NOS 4 CANTOS!';\n      statusEl.className = \"font-semibold text-center my-1 sm:my-0 text-sm sm:text-base text-yellow-400 animate-pulse\";\n\n      gameOverScreen.classList.add('hidden');\n\n      initCorners();\n\n      if (spawnInterval) clearInterval(spawnInterval);\n      spawnInterval = setInterval(spawnMonster, 950);\n    }\n\n    // Eventos de Gamepad\n    window.addEventListener(\"gamepadconnected\", (e) => {\n      isGamepadConnected = true;\n      gamepadIndex = e.gamepad.index;\n      updateGamepadUI(true, e.gamepad.id);\n    });\n\n    window.addEventListener(\"gamepaddisconnected\", (e) => {\n      isGamepadConnected = false;\n      gamepadIndex = null;\n      updateGamepadUI(false);\n    });\n\n    function updateGamepadUI(connected, id = \"\") {\n      if (connected) {\n        gamepadDot.className = \"w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse\";\n        gamepadText.innerText = \"CONTROLE CONECTADO\";\n        gamepadText.className = \"text-green-400 font-bold\";\n      } else {\n        gamepadDot.className = \"w-2.5 h-2.5 rounded-full bg-slate-600\";\n        gamepadText.innerText = \"TECLADO/MOUSE\";\n        gamepadText.className = \"text-slate-400\";\n      }\n    }\n\n    // Controles de Teclado/Mouse\n    window.addEventListener('keydown', e => {\n      initAudio();\n      keys[e.key.toLowerCase()] = true;\n    });\n    window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);\n\n    canvas.addEventListener('mousemove', e => {\n      const rect = canvas.getBoundingClientRect();\n      const scaleX = canvas.width / rect.width;\n      const scaleY = canvas.height / rect.height;\n      mouse.x = (e.clientX - rect.left) * scaleX;\n      mouse.y = (e.clientY - rect.top) * scaleY;\n    });\n\n    canvas.addEventListener('mousedown', e => {\n      initAudio();\n      if (e.button === 0 && hasWeapon && !gameOver) {\n        shootBullet();\n      }\n    });\n\n    btnRespawn.addEventListener('click', () => {\n      initAudio();\n      resetGame();\n    });\n\n    function spawnMonster() {\n      if (gameOver) return;\n      let x, y;\n      if (Math.random() < 0.5) {\n        x = Math.random() < 0.5 ? -60 : canvas.width + 60;\n        y = Math.random() * canvas.height;\n      } else {\n        x = Math.random() * canvas.width;\n        y = Math.random() < 0.5 ? -60 : canvas.height + 60;\n      }\n\n      monsters.push({\n        x: x,\n        y: y,\n        radius: 32,\n        speed: 3.5 + Math.random() * 2.8,\n        color: '#ff0055'\n      });\n    }\n\n    function createParticles(x, y, color, count = 12) {\n      for (let i = 0; i < count; i++) {\n        const angle = Math.random() * Math.PI * 2;\n        const speed = Math.random() * 8 + 2;\n        particles.push({\n          x: x,\n          y: y,\n          dx: Math.cos(angle) * speed,\n          dy: Math.sin(angle) * speed,\n          radius: Math.random() * 5 + 2,\n          color: color,\n          alpha: 1,\n          decay: Math.random() * 0.03 + 0.02\n        });\n      }\n    }\n\n    function shootBullet() {\n      const now = Date.now();\n      if (now - lastShootTime < shootCooldown) return;\n      lastShootTime = now;\n\n      bullets.push({\n        x: player.x,\n        y: player.y,\n        dx: Math.cos(player.angle) * 28,\n        dy: Math.sin(player.angle) * 28,\n        radius: 12\n      });\n\n      playSound('shoot');\n      createParticles(player.x + Math.cos(player.angle) * 35, player.y + Math.sin(player.angle) * 35, '#ffff00', 6);\n    }\n\n    // Leitura do Gamepad no Loop\n    function pollGamepad() {\n      const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];\n      let gp = null;\n\n      for (let i = 0; i < gamepads.length; i++) {\n        if (gamepads[i] && gamepads[i].connected) {\n          gp = gamepads[i];\n          if (!isGamepadConnected) {\n            isGamepadConnected = true;\n            updateGamepadUI(true, gp.id);\n          }\n          break;\n        }\n      }\n\n      if (!gp) return { moveX: 0, moveY: 0, aimX: 0, aimY: 0, shoot: false, respawn: false };\n\n      const deadzone = 0.2;\n      \n      // Movimento (Anal\u00f3gico Esquerdo ou D-Pad)\n      let moveX = gp.axes[0];\n      let moveY = gp.axes[1];\n\n      if (Math.abs(moveX) < deadzone) moveX = 0;\n      if (Math.abs(moveY) < deadzone) moveY = 0;\n\n      // D-Pad Suporte\n      if (gp.buttons[14] && gp.buttons[14].pressed) moveX = -1;\n      if (gp.buttons[15] && gp.buttons[15].pressed) moveX = 1;\n      if (gp.buttons[12] && gp.buttons[12].pressed) moveY = -1;\n      if (gp.buttons[13] && gp.buttons[13].pressed) moveY = 1;\n\n      // Mira (Anal\u00f3gico Direito)\n      let aimX = gp.axes[2];\n      let aimY = gp.axes[3];\n      if (Math.abs(aimX) < deadzone) aimX = 0;\n      if (Math.abs(aimY) < deadzone) aimY = 0;\n\n      // Bot\u00f5es de Atirar: RT/R2 (Bot\u00e3o 7), RB/R1 (Bot\u00e3o 5), A/X (Bot\u00e3o 0), X/Quadrado (Bot\u00e3o 2)\n      const shoot = (gp.buttons[7] && gp.buttons[7].pressed) || \n                    (gp.buttons[5] && gp.buttons[5].pressed) || \n                    (gp.buttons[0] && gp.buttons[0].pressed) || \n                    (gp.buttons[2] && gp.buttons[2].pressed);\n\n      // Bot\u00e3o Renascer: Bot\u00e3o A (0) ou Start (9)\n      const respawn = (gp.buttons[0] && gp.buttons[0].pressed) || (gp.buttons[9] && gp.buttons[9].pressed);\n\n      return { moveX, moveY, aimX, aimY, shoot, respawn };\n    }\n\n    function update() {\n      const gp = pollGamepad();\n\n      // Checar Bot\u00e3o Renascer pelo Controle quando Game Over\n      if (gameOver) {\n        if (gp.respawn && !lastGamepadRespawnPressed) {\n          initAudio();\n          resetGame();\n        }\n        lastGamepadRespawnPressed = gp.respawn;\n        return;\n      }\n      lastGamepadRespawnPressed = gp.respawn;\n\n      // --- MOVIMENTA\u00c7\u00c3O DO JOGADOR ---\n      let vx = 0;\n      let vy = 0;\n\n      // Teclado\n      if (keys['w'] || keys['arrowup']) vy -= 1;\n      if (keys['s'] || keys['arrowdown']) vy += 1;\n      if (keys['a'] || keys['arrowleft']) vx -= 1;\n      if (keys['d'] || keys['arrowright']) vx += 1;\n\n      // Prioridade / Combina\u00e7\u00e3o do Gamepad\n      if (gp.moveX !== 0 || gp.moveY !== 0) {\n        vx = gp.moveX;\n        vy = gp.moveY;\n      }\n\n      // Normaliza\u00e7\u00e3o da velocidade\n      const len = Math.hypot(vx, vy);\n      if (len > 0) {\n        player.x += (vx / (len > 1 ? len : 1)) * player.speed;\n        player.y += (vy / (len > 1 ? len : 1)) * player.speed;\n      }\n\n      // WRAP-AROUND NAS PAREDES (PAC-MAN STYLE)\n      if (player.x < 0) player.x = canvas.width;\n      else if (player.x > canvas.width) player.x = 0;\n\n      if (player.y < 0) player.y = canvas.height;\n      else if (player.y > canvas.height) player.y = 0;\n\n      // --- MIRA / \u00c2NGULO DO JOGADOR ---\n      if (gp.aimX !== 0 || gp.aimY !== 0) {\n        // Mira 360 pelo Anal\u00f3gico Direito\n        player.angle = Math.atan2(gp.aimY, gp.aimX);\n      } else if (len > 0 && isGamepadConnected) {\n        // Se estiver movendo sem mirar com o direito no controle, mira na dire\u00e7\u00e3o do movimento\n        player.angle = Math.atan2(vy, vx);\n      } else {\n        // Mira padr\u00e3o do Mouse\n        player.angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);\n      }\n\n      // Disparo autom\u00e1tico via Gamepad ao segurar o bot\u00e3o\n      if (gp.shoot && hasWeapon) {\n        shootBullet();\n      }\n\n      // Part\u00edculas\n      for (let i = particles.length - 1; i >= 0; i--) {\n        const p = particles[i];\n        p.x += p.dx;\n        p.y += p.dy;\n        p.alpha -= p.decay;\n        if (p.alpha <= 0) particles.splice(i, 1);\n      }\n\n      // Sistema dos Checkpoints da Volta na Tela\n      if (nextCornerIndex < corners.length) {\n        const target = corners[nextCornerIndex];\n        const dist = Math.hypot(player.x - target.x, player.y - target.y);\n\n        if (dist < player.radius + target.radius) {\n          target.reached = true;\n          playSound('checkpoint');\n          createParticles(target.x, target.y, '#ffcc00', 25);\n          nextCornerIndex++;\n\n          if (nextCornerIndex < corners.length) {\n            statusEl.innerText = `CANTO ALCAN\u00c7ADO! V\u00c1 PARA O ${corners[nextCornerIndex].label}`;\n            statusEl.className = \"font-semibold text-center my-1 sm:my-0 text-sm sm:text-base text-yellow-300\";\n          } else {\n            weaponOnField = { x: canvas.width / 2, y: canvas.height / 2, radius: 40 };\n            statusEl.innerText = 'VOLTA CONCLU\u00cdDA! PEGUE A ARMA NO CENTRO DA ARENA!';\n            statusEl.className = \"font-bold text-center my-1 sm:my-0 text-sm sm:text-base text-green-400 animate-bounce\";\n            playSound('weapon');\n          }\n        }\n      }\n\n      // Coletar a Arma\n      if (weaponOnField) {\n        const dist = Math.hypot(player.x - weaponOnField.x, player.y - weaponOnField.y);\n        if (dist < player.radius + weaponOnField.radius) {\n          hasWeapon = true;\n          playSound('weapon');\n          createParticles(weaponOnField.x, weaponOnField.y, '#00ff66', 35);\n          weaponOnField = null;\n          statusEl.innerText = 'ARMA COLETADA! MIRE E ELIMINE OS MONSTROS!';\n          statusEl.className = \"font-bold text-center my-1 sm:my-0 text-sm sm:text-base text-cyan-400\";\n        }\n      }\n\n      // Balas\n      for (let i = bullets.length - 1; i >= 0; i--) {\n        const b = bullets[i];\n        b.x += b.dx;\n        b.y += b.dy;\n        if (b.x < -50 || b.x > canvas.width + 50 || b.y < -50 || b.y > canvas.height + 50) {\n          bullets.splice(i, 1);\n        }\n      }\n\n      // Monstros\n      for (let i = monsters.length - 1; i >= 0; i--) {\n        const m = monsters[i];\n        const angle = Math.atan2(player.y - m.y, player.x - m.x);\n        m.x += Math.cos(angle) * m.speed;\n        m.y += Math.sin(angle) * m.speed;\n\n        // Dano no jogador\n        const distPlayer = Math.hypot(player.x - m.x, player.y - m.y);\n        if (distPlayer < player.radius + m.radius) {\n          gameOver = true;\n          playSound('explosion');\n          createParticles(player.x, player.y, '#ff0055', 50);\n          finalScoreEl.innerText = score;\n          gameOverScreen.classList.remove('hidden');\n          statusEl.innerText = 'CIRCUITO INTERROMPIDO!';\n          statusEl.className = \"font-bold text-center my-1 sm:my-0 text-sm sm:text-base text-red-500\";\n        }\n\n        // Bala acerta monstro\n        for (let j = bullets.length - 1; j >= 0; j--) {\n          const b = bullets[j];\n          const distBullet = Math.hypot(m.x - b.x, m.y - b.y);\n\n          if (distBullet < m.radius + b.radius) {\n            playSound('explosion');\n            createParticles(m.x, m.y, '#ff0055', 20);\n            monsters.splice(i, 1);\n            bullets.splice(j, 1);\n            score++;\n            scoreEl.innerText = score;\n            break;\n          }\n        }\n      }\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, canvas.width, canvas.height);\n\n      // Grid Fundo Cyberpunk\n      ctx.strokeStyle = '#121220';\n      ctx.lineWidth = 2;\n      for (let x = 0; x < canvas.width; x += 100) {\n        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();\n      }\n      for (let y = 0; y < canvas.height; y += 100) {\n        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();\n      }\n\n      // Part\u00edculas\n      particles.forEach(p => {\n        ctx.save();\n        ctx.globalAlpha = p.alpha;\n        ctx.fillStyle = p.color;\n        ctx.beginPath();\n        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);\n        ctx.fill();\n        ctx.restore();\n      });\n\n      // Circuito dos Cantos\n      if (!hasWeapon && !weaponOnField) {\n        corners.forEach((c, index) => {\n          if (!c.reached) {\n            const isNext = index === nextCornerIndex;\n            ctx.save();\n            ctx.strokeStyle = isNext ? '#ffcc00' : '#222233';\n            ctx.fillStyle = isNext ? 'rgba(255, 204, 0, 0.08)' : 'rgba(255, 255, 255, 0.01)';\n            ctx.lineWidth = isNext ? 6 : 3;\n\n            if (isNext) {\n              ctx.shadowColor = '#ffcc00';\n              ctx.shadowBlur = 30;\n            }\n\n            ctx.beginPath();\n            ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);\n            ctx.fill();\n            ctx.stroke();\n\n            ctx.fillStyle = isNext ? '#ffcc00' : '#444455';\n            ctx.font = 'bold 30px Orbitron';\n            ctx.textAlign = 'center';\n            ctx.fillText(isNext ? 'PASSE AQUI!' : `CANTO ${c.id}`, c.x, c.y + 10);\n            ctx.restore();\n          }\n        });\n      }\n\n      // Item da Arma\n      if (weaponOnField) {\n        ctx.save();\n        ctx.fillStyle = '#00ff66';\n        ctx.shadowColor = '#00ff66';\n        ctx.shadowBlur = 40;\n        ctx.beginPath();\n        ctx.arc(weaponOnField.x, weaponOnField.y, weaponOnField.radius, 0, Math.PI * 2);\n        ctx.fill();\n\n        ctx.fillStyle = '#000';\n        ctx.font = 'bold 26px Orbitron';\n        ctx.textAlign = 'center';\n        ctx.fillText('ARMA', weaponOnField.x, weaponOnField.y + 9);\n        ctx.restore();\n      }\n\n      // Projet\u00e9is\n      ctx.save();\n      ctx.fillStyle = '#ffff00';\n      ctx.shadowColor = '#ffff00';\n      ctx.shadowBlur = 20;\n      bullets.forEach(b => {\n        ctx.beginPath();\n        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);\n        ctx.fill();\n      });\n      ctx.restore();\n\n      // Monstros\n      monsters.forEach(m => {\n        ctx.save();\n        ctx.fillStyle = m.color;\n        ctx.shadowColor = m.color;\n        ctx.shadowBlur = 20;\n        ctx.beginPath();\n        ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);\n        ctx.fill();\n\n        ctx.fillStyle = '#000000';\n        ctx.beginPath();\n        ctx.arc(m.x - 10, m.y - 10, 5, 0, Math.PI * 2);\n        ctx.arc(m.x + 10, m.y - 10, 5, 0, Math.PI * 2);\n        ctx.fill();\n        ctx.restore();\n      });\n\n      // Jogador\n      if (!gameOver) {\n        ctx.save();\n        ctx.fillStyle = player.color;\n        ctx.shadowColor = player.color;\n        ctx.shadowBlur = 30;\n        ctx.beginPath();\n        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);\n        ctx.fill();\n\n        // Arma Equipada\n        if (hasWeapon) {\n          ctx.translate(player.x, player.y);\n          ctx.rotate(player.angle);\n          ctx.fillStyle = '#ffffff';\n          ctx.shadowColor = '#ffffff';\n          ctx.shadowBlur = 15;\n          ctx.fillRect(18, -7, 36, 14);\n        }\n        ctx.restore();\n      }\n    }\n\n    function gameLoop() {\n      update();\n      draw();\n      requestAnimationFrame(gameLoop);\n    }\n\n    resetGame();\n    gameLoop();\n  <\/script>\n<\/body>\n<\/html>";
+const fr=document.getElementById('fcirc');
+GM['s-circ']={start(){fr.srcdoc=SRC;setTimeout(()=>{try{fr.focus()}catch(e){}},300)},stop(){fr.srcdoc=''}};
+})();
+
+/* ---------- Soccer Star (jogo original, em iframe) ---------- */
+(function(){
+const SRC="<!DOCTYPE html>\n<html lang=\"pt-BR\"><head><meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<title>Soccer Star<\/title>\n<style>\n:root{--bg:#0e2a1a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}\n@media (prefers-color-scheme:dark){:root:not([data-theme=\"light\"]){--bg:#0e2a1a}}\n:root[data-theme=\"dark\"]{--bg:#0e2a1a}\nhtml{scroll-padding-top:env(safe-area-inset-top,0px)}\nhtml,body{height:100%;margin:0}\nbody{background:var(--bg);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;justify-content:center;align-items:center;font-family:system-ui,sans-serif}\ncanvas{display:block;border-radius:8px}\n.kb{position:fixed;display:none;width:84px;height:84px;border-radius:50%;border:3px solid #fff;background:rgba(255,255,255,.2);color:#fff;font-weight:700;font-size:13px}\n#k{right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}\n#k2{left:18px;top:calc(env(safe-area-inset-top,0px) + 24px);border-color:#ff8a80}\n.jb,.jk{position:fixed;border-radius:50%;display:none;pointer-events:none}\n.jb{width:100px;height:100px;border:2px solid rgba(255,255,255,.5);margin:-50px 0 0 -50px}\n.jk{width:44px;height:44px;background:rgba(255,255,255,.6);margin:-22px 0 0 -22px}\n#m{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:12px}\n#m button{font-size:18px;font-weight:700;padding:14px 28px;border-radius:12px;border:0;background:#fff;color:#0e2a1a}\n#pn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);display:none;gap:10px}\n#pn button{font-size:15px;font-weight:700;padding:14px 16px;border-radius:12px;border:0;background:#fff;color:#0e2a1a}\n<\/style><\/head><body>\n<canvas id=\"c\"><\/canvas>\n<div id=\"m\"><button id=\"b1\">1 JOGADOR<\/button><button id=\"b2\">2 JOGADORES<\/button><\/div>\n<div id=\"pn\"><button>\u25c0 ESQUERDA<\/button><button>CENTRO<\/button><button>DIREITA \u25b6<\/button><\/div>\n<button id=\"k\" class=\"kb\">CHUTAR<\/button><button id=\"k2\" class=\"kb\">CHUTAR<\/button>\n<script>\nconst W=360,H=600,GW=110,cv=document.getElementById('c'),g=cv.getContext('2d'),$=id=>document.getElementById(id);\ncv.width=W*2;cv.height=H*2;g.scale(2,2);\nfunction fit(){const s=Math.min(innerWidth/W,innerHeight/H);cv.style.width=W*s+'px';cv.style.height=H*s+'px'}\naddEventListener('resize',fit);fit();\nlet golden=false,endMsg='',st='menu',mode=1,sc=[0,0],t=90,msg='',pause=0,P,C,B,K1,K2;const kk=[false,false],keys={};\nconst J=[0,1].map(()=>{const b=document.createElement('div'),k=document.createElement('div');b.className='jb';k.className='jk';document.body.append(b,k);return{id:null,o:null,v:{x:0,y:0},b,k}});\nfunction reset(w){K1={x:W/2,y:24,vx:0,vy:0,r:13};K2={x:W/2,y:H-24,vx:0,vy:0,r:13};P={x:W/2,y:w===0?H/2+26:H*.75,vx:0,vy:0,r:15};C={x:W/2,y:w===1?H/2-26:H*.25,vx:0,vy:0,r:15};B={x:W/2,y:H/2,vx:0,vy:0,r:8}}\nfunction ui(on){$('m').style.display=on?'none':'flex';$('k').style.display=on?'block':'none';$('k2').style.display=on&&mode===2?'block':'none'}\nfunction start(m){if(st==='play'||st==='pen')return;mode=m||mode;sc=[0,0];t=90;pause=0;msg='';endMsg='';golden=false;reset();st='play';ui(true)}\nreset();\n$('b1').addEventListener('click',()=>start(1));$('b2').addEventListener('click',()=>start(2));\n$('k').addEventListener('pointerdown',()=>kk[0]=true);$('k2').addEventListener('pointerdown',()=>kk[1]=true);\naddEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=1;if(st!=='play'){if(k==='1')start(1);if(k==='2')start(2);if(k==='enter')start();return}if(k===' ')kk[0]=true;if(k==='enter')kk[1]=true});\naddEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);\nfunction pos(el,x,y){el.style.left=x+'px';el.style.top=y+'px'}\naddEventListener('pointerdown',e=>{if(st!=='play'||e.target.tagName==='BUTTON')return;const j=J[mode===2&&e.clientY<innerHeight/2?1:0];if(j.id!==null||(mode===1&&e.clientX>innerWidth*.65))return;j.id=e.pointerId;j.o={x:e.clientX,y:e.clientY};j.b.style.display=j.k.style.display='block';pos(j.b,j.o.x,j.o.y);pos(j.k,j.o.x,j.o.y)});\naddEventListener('pointermove',e=>{const j=J.find(j=>j.id===e.pointerId);if(!j)return;let dx=e.clientX-j.o.x,dy=e.clientY-j.o.y,m=Math.hypot(dx,dy),c=Math.min(m,50);if(m>0){dx=dx/m*c;dy=dy/m*c}j.v.x=dx/50;j.v.y=dy/50;pos(j.k,j.o.x+dx,j.o.y+dy)});\nfunction up(e){const j=J.find(j=>j.id===e.pointerId);if(!j)return;j.id=null;j.v.x=j.v.y=0;j.b.style.display=j.k.style.display='none'}\naddEventListener('pointerup',up);addEventListener('pointercancel',up);\nfunction move(o,ax,ay,sp){const m=Math.hypot(ax,ay);if(m>1){ax/=m;ay/=m}o.vx+=(ax*sp-o.vx)*.2;o.vy+=(ay*sp-o.vy)*.2;o.x=Math.max(o.r,Math.min(W-o.r,o.x+o.vx));o.y=Math.max(o.r,Math.min(H-o.r,o.y+o.vy))}\nfunction corner(){return(B.x<B.r+14||B.x>W-B.r-14)&&(B.y<B.r+14||B.y>H-B.r-14)&&Math.abs(B.x-W/2)>=GW/2-B.r}\nfunction free(){const cx=W/2-B.x,cy=H/2-B.y,m=Math.hypot(cx,cy)||1;B.vx=cx/m*5;B.vy=cy/m*5}\nfunction hit(o){const dx=B.x-o.x,dy=B.y-o.y,d=Math.hypot(dx,dy)||1,min=o.r+B.r;if(d<min){const nx=dx/d,ny=dy/d;B.x=o.x+nx*min;B.y=o.y+ny*min;B.vx=B.vx*.3+o.vx*1.3+nx*1.5;B.vy=B.vy*.3+o.vy*1.3+ny*1.5;if(corner())free()}}\nfunction hitK(o){const dx=B.x-o.x,dy=B.y-o.y,d=Math.hypot(dx,dy)||1,min=o.r+B.r;if(d<min){const nx=dx/d,ny=dy/d;B.x=o.x+nx*min;B.y=o.y+ny*min;const vn=B.vx*nx+B.vy*ny;if(vn<0){B.vx-=1.8*vn*nx;B.vy-=1.8*vn*ny}B.vx+=nx*2;B.vy+=ny*2}}\nfunction keeper(o){move(o,(B.x-o.x)/10,0,2.2);const l=GW/2-o.r+4;o.x=Math.max(W/2-l,Math.min(W/2+l,o.x))}\nfunction shoot(tx,ty,p){const dx=tx-B.x,dy=ty-B.y,d=Math.hypot(dx,dy)||1;B.vx=dx/d*p;B.vy=dy/d*p}\nfunction near(o){return Math.hypot(B.x-o.x,B.y-o.y)<o.r+B.r+7}\nfunction kickBy(o){if(near(o)){const dx=B.x-o.x,dy=B.y-o.y,d=Math.hypot(dx,dy)||1;B.vx=dx/d*11;B.vy=dy/d*11}}\nfunction goal(i){sc[i]++;if(golden){endGame(i,' no gol de ouro');golden=false;return}msg=mode===2?(i?'GOL DO VERMELHO!':'GOL DO AZUL!'):(i?'GOL DO ADVERS\u00c1RIO':'GOL!');pause=90;reset(i===0?1:0)}\nfunction step(){\n if(pause>0){pause--;return}\n let ax=(keys.d?1:0)-(keys.a?1:0),ay=(keys.s?1:0)-(keys.w?1:0);\n if(mode===1){ax+=(keys.arrowright?1:0)-(keys.arrowleft?1:0);ay+=(keys.arrowdown?1:0)-(keys.arrowup?1:0)}\n if(!ax&&!ay){ax=J[0].v.x||PV[0].x;ay=J[0].v.y||PV[0].y}\n move(P,ax,ay,3.3);\n if(kk[0]){kickBy(P);kk[0]=false}\n if(mode===2){\n  let bx=(keys.arrowright?1:0)-(keys.arrowleft?1:0),by=(keys.arrowdown?1:0)-(keys.arrowup?1:0);\n  if(!bx&&!by){bx=J[1].v.x||PV[1].x;by=J[1].v.y||PV[1].y}\n  move(C,bx,by,3.3);\n  if(kk[1]){kickBy(C);kk[1]=false}\n }else{\n  let tx,ty;\n  if(C.y<B.y-6){tx=B.x-(W/2-B.x)*.08;ty=B.y-4}else{tx=B.x+(B.x<C.x?34:-34);ty=B.y-34}\n  move(C,(tx-C.x)/20,(ty-C.y)/20,2.7*Math.min(1,Math.hypot(tx-C.x,ty-C.y)/10+.3));\n  if(near(C)&&C.y<B.y&&Math.random()<.06){B.x+=0;shoot(W/2+(Math.random()-.5)*60,H,9)}\n }\n keeper(K1);keeper(K2);hit(P);hit(C);hitK(K1);hitK(K2);\n B.x+=B.vx;B.y+=B.vy;B.vx*=.988;B.vy*=.988;\n if(corner()&&Math.hypot(B.vx,B.vy)<.6)free();\n if(B.x<B.r){B.x=B.r;B.vx*=-.8}if(B.x>W-B.r){B.x=W-B.r;B.vx*=-.8}\n const ing=Math.abs(B.x-W/2)<GW/2-B.r;\n if(B.y<B.r&&!ing){B.y=B.r;B.vy*=-.8}if(B.y>H-B.r&&!ing){B.y=H-B.r;B.vy*=-.8}\n if(B.y<-B.r)goal(0);else if(B.y>H+B.r)goal(1);\n if(!golden)t-=1/60;if(t<=0&&!golden){t=0;if(sc[0]===sc[1])startPen();else endGame(sc[0]>sc[1]?0:1)}\n}\nfunction txt(s,x,y,sz,c){g.fillStyle=c||'#fff';g.font='700 '+sz+'px system-ui,sans-serif';g.textAlign='center';g.fillText(s,x,y)}\nfunction ball(o,c){g.fillStyle=c;g.beginPath();g.arc(o.x,o.y,o.r,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=2;g.stroke()}\nfunction boy(o,sh,pt){const x=o.x,y=o.y,f=(c,a,b,w,h,r)=>{g.fillStyle=c;g.beginPath();g.roundRect(a,b,w,h,r);g.fill()};\n g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(x,y+17,13,5,0,0,7);g.fill();\n f(pt,x-8,y+6,6,11,3);f(pt,x+2,y+6,6,11,3);\n f(sh,x-10,y-6,20,16,5);f(sh,x-14,y-5,5,11,3);f(sh,x+9,y-5,5,11,3);\n g.fillStyle='#ffcc99';g.beginPath();g.arc(x,y-12,8,0,7);g.fill();\n g.fillStyle='#4e342e';g.beginPath();g.arc(x,y-14,8,Math.PI,0);g.fill();\n g.fillStyle='#222';g.fillRect(x-4,y-11,2,2);g.fillRect(x+2,y-11,2,2)}\nfunction draw(){\n if(st==='pen'){drawPen();return}\n for(let i=0;i<10;i++){g.fillStyle=i%2?'#2e8b3e':'#35a047';g.fillRect(0,i*H/10,W,H/10)}\n g.strokeStyle='rgba(255,255,255,.8)';g.lineWidth=2;g.strokeRect(2,2,W-4,H-4);\n g.beginPath();g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();\n g.beginPath();g.arc(W/2,H/2,50,0,7);g.stroke();\n g.strokeRect(W/2-70,2,140,60);g.strokeRect(W/2-70,H-62,140,60);\n g.fillStyle='#fff';g.fillRect(W/2-GW/2,0,GW,4);g.fillRect(W/2-GW/2,H-4,GW,4);\n ball(K1,'#ff9800');ball(K2,'#4dd0e1');boy(C,'#e53935','#7f0000');boy(P,'#1e88e5','#0d47a1');\n g.fillStyle='#fff';g.beginPath();g.arc(B.x,B.y,B.r,0,7);g.fill();g.strokeStyle='#222';g.lineWidth=2;g.stroke();\n txt(mode===2?'AZUL '+sc[0]+' x '+sc[1]+' VERMELHO':'VOC\u00ca '+sc[0]+' x '+sc[1]+' CPU',W/2,H/2-60,18);\n txt(golden?'GOL DE OURO':Math.ceil(t)+'s',W/2,H/2+75,16);\n if(pause>0)txt(msg,W/2,H/2,34,'#ffeb3b');\n if(st!=='play'){g.fillStyle='rgba(0,0,0,.6)';g.fillRect(0,0,W,H);\n  if(st==='end'&&endMsg)txt(endMsg,W/2,H/2-110,24);else if(st==='end')txt(sc[0]>sc[1]?(mode===2?'Azul venceu! \ud83c\udfc6':'Voc\u00ea venceu! \ud83c\udfc6'):sc[0]<sc[1]?(mode===2?'Vermelho venceu! \ud83c\udfc6':'Voc\u00ea perdeu \ud83d\ude22'):'Empate',W/2,H/2-110,28);\n  else txt('\u26bd Soccer Star',W/2,H/2-110,32);\n  txt('1P: arraste para mover \u2022 CHUTAR',W/2,H/2+100,13);\n  txt('2P: azul embaixo, vermelho em cima (cada um na sua metade)',W/2,H/2+120,12);\n  txt('Teclado: WASD+espa\u00e7o  |  setas+Enter',W/2,H/2+140,12);txt('\ud83c\udfae Controle: A = 1 jogador \u2022 X = 2 jogadores',W/2,H/2+160,12)}\n}\nconst ZX=[110,180,250];let pen;\n[...$('pn').children].forEach((b,i)=>b.onclick=()=>pick(i));\nfunction sh(){return mode===2||pen.turn===0}\nfunction kp(){return mode===2||pen.turn===1}\nfunction who(i){return mode===2?(i?'VERMELHO':'AZUL'):(i?'CPU':'VOC\u00ca')}\nfunction pn(){$('pn').style.display=(pen.ph==='shoot'||pen.ph==='save')?'flex':'none'}\nfunction startPen(){st='pen';pen={turn:0,g:[0,0],n:[0,0],log:[[],[]]};$('k').style.display=$('k2').style.display='none';nextKick()}\nfunction nextKick(){pen.ph='shoot';pen.sd=pen.kd=-1;pen.t=0;if(!sh()){pen.sd=Math.floor(Math.random()*3);pen.ph='save'}pn()}\nfunction pick(d){if(st!=='pen')return;if(pen.ph==='shoot'){pen.sd=d;if(kp())pen.ph='save';else{pen.kd=Math.floor(Math.random()*3);pen.ph='anim'}}else if(pen.ph==='save'){pen.kd=d;pen.ph='anim'}else return;pen.t=0;pn()}\nfunction endGame(w,pk){const s=pk===true?' nos p\u00eanaltis':pk||'';st='end';$('pn').style.display='none';endMsg=mode===2?(w?'Vermelho':'Azul')+' venceu'+s+'! \ud83c\udfc6':(w===0?'Voc\u00ea venceu'+s+'! \ud83c\udfc6':'Voc\u00ea perdeu'+s+' \ud83d\ude22');ui(false)}\nfunction penStep(){if(pen.ph!=='anim'&&pen.ph!=='res')return;pen.t++;\n if(pen.ph==='anim'&&pen.t===60){const i=pen.turn,gl=pen.sd!==pen.kd;pen.n[i]++;if(gl)pen.g[i]++;pen.log[i].push(gl);pen.goal=gl;pen.ph='res';pen.t=0}\n else if(pen.ph==='res'&&pen.t===70){const[a,b]=pen.n,[x,y]=pen.g;let w=-1;\n  if(a<=5&&b<=5){if(x>y+(5-b))w=0;else if(y>x+(5-a))w=1}\n  if(w<0&&a===b&&a>=5&&x!==y)w=x>y?0:1;\n  if(w<0&&a===5&&b===5&&x===y){startGolden();return}\n  if(w>=0)endGame(w,true);else{pen.turn=1-pen.turn;nextKick()}}}\nfunction startGolden(){golden=true;st='play';pause=120;msg='GOL DE OURO!';reset();ui(true);$('pn').style.display='none'}\nfunction drawPen(){const p=pen;\n g.fillStyle='#2e8b3e';g.fillRect(0,0,W,H);g.fillStyle='#35a047';g.fillRect(0,300,W,300);\n g.strokeStyle='#fff';g.lineWidth=5;g.strokeRect(50,110,260,140);\n g.lineWidth=1;g.globalAlpha=.35;for(let x=50;x<=310;x+=20){g.beginPath();g.moveTo(x,110);g.lineTo(x,250);g.stroke()}for(let y=110;y<=250;y+=20){g.beginPath();g.moveTo(50,y);g.lineTo(310,y);g.stroke()}g.globalAlpha=1;\n g.fillStyle='#fff';g.beginPath();g.arc(W/2,470,3,0,7);g.fill();\n const an=p.ph==='anim'||p.ph==='res',res=p.ph==='res',a=res?1:Math.min(1,p.t/40),k=res?1:Math.min(1,p.t/25);\n let bx=W/2,by=470,kx=W/2;\n if(an){bx=W/2+(ZX[p.sd]-W/2)*a;by=470-265*a;kx=W/2+(ZX[p.kd]-W/2)*k}\n boy({x:kx,y:185},'#fdd835','#f57f17');\n boy({x:W/2-45,y:500},p.turn?'#e53935':'#1e88e5',p.turn?'#7f0000':'#0d47a1');\n g.fillStyle='#fff';g.beginPath();g.arc(bx,by,10-3*a,0,7);g.fill();g.strokeStyle='#222';g.lineWidth=2;g.stroke();\n txt('P\u00caNALTIS',W/2,32,16);\n txt(who(0)+' '+p.g[0]+' x '+p.g[1]+' '+who(1),W/2,58,20);\n for(let i=0;i<2;i++)p.log[i].forEach((r,j)=>{g.fillStyle=r?'#4caf50':'#f44336';g.beginPath();g.arc(W/2-60+j*22,(i?100:80),7,0,7);g.fill()});\n if(p.ph==='shoot')txt(who(p.turn)+': onde chutar?',W/2,350,20);\n else if(p.ph==='save')txt((mode===2?who(1-p.turn)+' (goleiro)':p.turn?'VOC\u00ca (goleiro)':'')+': onde defender?',W/2,350,20);\n else if(res)txt(p.goal?'GOL!':'DEFENDEU!',W/2,350,34,'#ffeb3b')}\nconst PV=[{x:0,y:0},{x:0,y:0}],pb={};\nfunction ed(k,on){const r=on&&!pb[k];pb[k]=on;return r}\nfunction dz(v){return Math.abs(v)<.2?0:v}\nfunction pads(){const ps=[...(navigator.getGamepads?navigator.getGamepads():[])].filter(Boolean);PV[0].x=PV[0].y=PV[1].x=PV[1].y=0;\n ps.forEach((p,i)=>{if(i>1)return;const b=n=>!!(p.buttons[n]&&p.buttons[n].pressed),e=n=>ed(i+'b'+n,b(n));\n  PV[i].x=dz(p.axes[0])||b(15)-b(14);PV[i].y=dz(p.axes[1])||b(13)-b(12);\n  if(mode===2&&ps.length===1){PV[1].x=dz(p.axes[2]);PV[1].y=dz(p.axes[3])}\n  const a=e(0),x=e(2),s=e(9),rt=e(7),rb=e(5),l=e(14)|ed(i+'sl',p.axes[0]<-.6),r=e(15)|ed(i+'sr',p.axes[0]>.6),u=e(12);\n  if(st==='play'){if(a||rt)kk[mode===2?i:0]=true;if(rb)kk[mode===2&&ps.length===1?1:0]=true}\n  else if(st==='pen'){if(l)pick(0);if(u||a)pick(1);if(r)pick(2)}\n  else{if(a)start(1);if(x)start(2);if(s)start()}})}\nlet last=performance.now(),acc=0;\nfunction loop(n){pads();acc+=Math.min(100,n-last);last=n;while(acc>16.67){if(st==='play')step();else if(st==='pen')penStep();acc-=16.67}draw();requestAnimationFrame(loop)}\nrequestAnimationFrame(loop);\n<\/script><\/body><\/html>\n";
+const fr=document.getElementById('fsoccer');
+GM['s-soccer']={start(){fr.srcdoc=SRC;setTimeout(()=>{try{fr.focus()}catch(e){}},300)},stop(){fr.srcdoc=''}};
+})();
+
+/* ---------- Hóquei de Mesa (jogo original, em iframe) ---------- */
+(function(){
+const SRC="<!DOCTYPE html>\n<html lang=\"pt-BR\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<title>H\u00f3quei de Mesa<\/title>\n<style>\n:root{--bg:#0d1b2a;--fg:#e8f3f8;--btn:#c8102e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}\n@media (prefers-color-scheme:dark){:root:not([data-theme=\"light\"]){--bg:#0d1b2a;--fg:#e8f3f8}}\n:root[data-theme=\"dark\"]{--bg:#0d1b2a;--fg:#e8f3f8}\nhtml{scroll-padding-top:env(safe-area-inset-top,0px)}\nhtml,body{height:100%;margin:0}\nbody{background:var(--bg);color:var(--fg);font-family:\"Trebuchet MS\",Verdana,sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}\n#wrap{position:relative;height:100%;max-height:900px;aspect-ratio:4/7;max-width:100%}\ncanvas{width:100%;height:100%;display:block;border-radius:18px;cursor:none}\n#ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(13,27,42,.82);border-radius:18px;text-align:center;padding:24px}\n#ov h1{margin:0;font-size:2rem;letter-spacing:.02em}\n#ov p{margin:0;max-width:28ch;line-height:1.4;opacity:.85}\nbutton{font:inherit;font-weight:700;font-size:1.1rem;background:var(--btn);color:#fff;border:0;border-radius:999px;padding:12px 32px;cursor:pointer}\nbutton:focus-visible{outline:3px solid #fff;outline-offset:3px}\n.lv{display:flex;gap:8px}\n.lv button{background:transparent;border:2px solid var(--fg);color:var(--fg);padding:8px 16px;font-size:.95rem}\n.lv button.on{background:var(--fg);color:var(--bg)}\n<\/style>\n<\/head>\n<body>\n<div id=\"wrap\">\n<canvas id=\"c\" width=\"400\" height=\"700\"><\/canvas>\n<div id=\"ov\">\n<h1 id=\"t\">H\u00f3quei de Mesa<\/h1>\n<p id=\"m\">Controle o seu taco (embaixo) com o mouse, o dedo ou o controle (anal\u00f3gico esquerdo ou direcional; bot\u00e3o A inicia). O primeiro a fazer 7 gols vence.<\/p>\n<div class=\"lv\" role=\"group\" aria-label=\"Dificuldade\">\n<button data-l=\"3.2\">F\u00e1cil<\/button><button data-l=\"4.4\" class=\"on\">M\u00e9dio<\/button><button data-l=\"5.8\">Dif\u00edcil<\/button>\n<\/div>\n<button id=\"go\">Jogar<\/button>\n<\/div>\n<\/div>\n<script>\nconst cv=document.getElementById('c'),g=cv.getContext('2d'),ov=document.getElementById('ov');\nconst W=400,H=700,MR=28,PR=15,GW=150,WIN=7;\nlet aiSpeed=4.4,score=[0,0],run=false,pause=0;\nconst puck={x:W/2,y:H/2,vx:0,vy:0};\nconst me={x:W/2,y:H-100,vx:0,vy:0,tx:W/2,ty:H-100};\nconst ai={x:W/2,y:100,vx:0,vy:0};\nfunction reset(dir){puck.x=W/2;puck.y=H/2;puck.vx=0;puck.vy=dir*2;pause=60}\nfunction move(e){const r=cv.getBoundingClientRect();me.tx=(e.clientX-r.left)*W/r.width;me.ty=(e.clientY-r.top)*H/r.height}\ncv.addEventListener('pointermove',move);\ncv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);move(e)});\ndocument.querySelectorAll('.lv button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.lv button').forEach(x=>x.classList.remove('on'));b.classList.add('on');aiSpeed=+b.dataset.l});\ndocument.getElementById('go').onclick=()=>{score=[0,0];ov.style.display='none';reset(1);run=true};\nfunction hit(m){\n  const dx=puck.x-m.x,dy=puck.y-m.y,d=Math.hypot(dx,dy),min=MR+PR;\n  if(d<min&&d>0){\n    const nx=dx/d,ny=dy/d;\n    puck.x=m.x+nx*min;puck.y=m.y+ny*min;\n    const rv=(puck.vx-m.vx)*nx+(puck.vy-m.vy)*ny;\n    if(rv<0){puck.vx-=1.9*rv*nx;puck.vy-=1.9*rv*ny}\n    const s=Math.hypot(puck.vx,puck.vy);\n    if(s>17){puck.vx*=17/s;puck.vy*=17/s}\n  }\n}\nfunction end(win){\n  run=false;ov.style.display='flex';\n  document.getElementById('t').textContent=win?'Voc\u00ea venceu!':'Voc\u00ea perdeu';\n  document.getElementById('m').textContent='Placar final: '+score[0]+' a '+score[1]+'. Quer jogar de novo?';\n  document.getElementById('go').textContent='Jogar de novo';\n}\nfunction step(){\n  // jogador\n  let nx=me.x+(me.tx-me.x)*.5,ny=me.y+(me.ty-me.y)*.5;\n  nx=Math.max(MR,Math.min(W-MR,nx));ny=Math.max(H/2+MR,Math.min(H-MR,ny));\n  me.vx=nx-me.x;me.vy=ny-me.y;me.x=nx;me.y=ny;\n  // IA\n  let tx=W/2,ty=90;\n  if(puck.y<H/2+20){tx=puck.x;ty=puck.y-(puck.y>ai.y+10?-0:30);if(puck.y<ai.y)ty=Math.max(MR,puck.y-40)}\n  if(puck.y<ai.y+MR&&Math.abs(puck.x-ai.x)<MR*2)ty=puck.y-10;\n  let dx=tx-ai.x,dy=ty-ai.y,dd=Math.hypot(dx,dy)||1,sp=Math.min(aiSpeed,dd);\n  ai.vx=dx/dd*sp;ai.vy=dy/dd*sp;\n  ai.x=Math.max(MR,Math.min(W-MR,ai.x+ai.vx));ai.y=Math.max(MR,Math.min(H/2-MR,ai.y+ai.vy));\n  if(pause>0){pause--;return}\n  puck.x+=puck.vx;puck.y+=puck.vy;puck.vx*=.978;puck.vy*=.978;\n  hit(me);hit(ai);\n  if(puck.x<PR){puck.x=PR;puck.vx=Math.abs(puck.vx)}\n  if(puck.x>W-PR){puck.x=W-PR;puck.vx=-Math.abs(puck.vx)}\n  const inG=Math.abs(puck.x-W/2)<GW/2-PR*.3;\n  if(puck.y<PR&&!inG){puck.y=PR;puck.vy=Math.abs(puck.vy)}\n  if(puck.y>H-PR&&!inG){puck.y=H-PR;puck.vy=-Math.abs(puck.vy)}\n  if(puck.y<-PR){score[0]++;if(score[0]>=WIN)return end(true);reset(-1)}\n  if(puck.y>H+PR){score[1]++;if(score[1]>=WIN)return end(false);reset(1)}\n}\nfunction circ(x,y,r,f,s,w){g.beginPath();g.arc(x,y,r,0,7);if(f){g.fillStyle=f;g.fill()}if(s){g.lineWidth=w||3;g.strokeStyle=s;g.stroke()}}\nfunction draw(){\n  g.fillStyle='#e8f3f8';g.fillRect(0,0,W,H);\n  g.strokeStyle='#c8102e';g.lineWidth=5;g.beginPath();g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();\n  circ(W/2,H/2,60,null,'#1d4e9e',4);circ(W/2,H/2,8,'#1d4e9e');\n  g.strokeStyle='#1d4e9e';g.lineWidth=3;\n  [[0,1],[H,-1]].forEach(([y,s])=>{g.beginPath();g.arc(W/2,y,GW/2+18,s>0?0:Math.PI,s>0?Math.PI:0);g.stroke()});\n  g.fillStyle='#0d1b2a';g.fillRect(W/2-GW/2,0,GW,8);g.fillRect(W/2-GW/2,H-8,GW,8);\n  g.strokeStyle='#0d1b2a';g.lineWidth=10;g.strokeRect(0,0,W,H);\n  g.font='bold 64px \"Trebuchet MS\",Verdana,sans-serif';g.textAlign='left';g.fillStyle='rgba(29,78,158,.22)';\n  g.fillText(score[1],20,H/2-18);g.fillText(score[0],20,H/2+68);\n  circ(ai.x,ai.y,MR,'#1d4e9e','#0d1b2a',4);circ(ai.x,ai.y,MR*.45,'#7fa6e0');\n  circ(me.x,me.y,MR,'#c8102e','#0d1b2a',4);circ(me.x,me.y,MR*.45,'#f08a98');\n  circ(puck.x,puck.y,PR,'#0d1b2a','#444',2);\n}\nlet lastBtn=false;\nfunction pad(){\n  const gp=[...(navigator.getGamepads?navigator.getGamepads():[])].find(p=>p&&p.connected);\n  if(!gp)return;\n  const b=i=>gp.buttons[i]&&gp.buttons[i].pressed;\n  let ax=gp.axes[0]||0,ay=gp.axes[1]||0;\n  if(Math.hypot(ax,ay)<.15){ax=0;ay=0}\n  if(b(14))ax=-1;if(b(15))ax=1;if(b(12))ay=-1;if(b(13))ay=1;\n  if(run){\n    me.tx=Math.max(MR,Math.min(W-MR,(isFinite(me.tx)?me.tx:me.x)+ax*10));\n    me.ty=Math.max(H/2+MR,Math.min(H-MR,(isFinite(me.ty)?me.ty:me.y)+ay*10));\n  }\n  const press=b(0)||b(9);\n  if(press&&!lastBtn&&!run)document.getElementById('go').click();\n  lastBtn=press;\n}\n(function loop(){pad();if(run)step();draw();requestAnimationFrame(loop)})();\ndraw();\n<\/script>\n<\/body>\n<\/html>\n";
+const fr=document.getElementById('fhoquei');
+GM['s-hoquei']={start(){fr.srcdoc=SRC;setTimeout(()=>{try{fr.focus()}catch(e){}},300)},stop(){fr.srcdoc=''}};
+})();
+
+/* ---------- Luta ---------- */
+(function(){
+const cv=document.getElementById('cf'),g=cv.getContext('2d');
+const mk=(x,f)=>({x,f,hp:100,atk:0,cd:0,bt:0,blk:0,stun:0,hit:0});
+let F;const rst=()=>{F={s:'run',p:mk(90,1),c:mk(310,-1)}};rst();
+cv.addEventListener('pointerdown',()=>{if(F.s!='run')rst()});
+function step(a,o,dt){
+  if(a.cd>0)a.cd-=dt;if(a.stun>0){a.stun-=dt;a.atk=0}if(a.hit>0)a.hit-=dt;
+  if(a.atk>0){const b=a.atk;a.atk-=dt;
+    if(b>10&&a.atk<=10&&Math.abs(o.x-a.x)<=62){
+      if(o.blk){o.hp-=1;o.x+=a.f*4}else{o.hp-=8;o.stun=14;o.hit=10;o.x+=a.f*14}}}
+  a.x=cl(a.x,28,372);
+}
+function upd(dt){
+  const p=F.p,c=F.c;
+  if(F.s!='run'){if(E(' ')||E('enter'))rst()}
+  else{
+    p.f=c.x>p.x?1:-1;c.f=-p.f;
+    p.blk=(K.k||K.s||K.blk)&&!p.atk&&!p.stun?1:0;
+    if(!p.atk&&!p.stun){
+      if(!p.blk)p.x+=((K.arrowright||K.d||K.r?1:0)-(K.arrowleft||K.a||K.l?1:0))*2.6*dt;
+      if((E(' ')||E('j')||E('p'))&&p.cd<=0&&!p.blk){p.atk=18;p.cd=24}
+    }
+    const d=Math.abs(p.x-c.x);
+    if(!c.atk&&!c.stun){
+      if(c.bt>0){c.bt-=dt;c.blk=1}else{c.blk=0;
+        if(p.atk>6&&d<75&&Math.random()<.04*dt)c.bt=28;
+        else if(d>54)c.x+=c.f*2*dt;
+        else if(d<38)c.x-=c.f*1.5*dt;
+        if(c.cd<=0&&d<=60&&Math.random()<.035*dt){c.atk=18;c.cd=42}}
+    }
+    step(p,c,dt);step(c,p,dt);
+    if(d<34){const s=(34-d)/2;p.x-=p.f*s;c.x-=c.f*s}
+    if(p.hp<=0||c.hp<=0)F.s='over';
+  }
+  g.fillStyle='#2b1d4a';g.fillRect(0,0,400,240);
+  g.fillStyle='#ff9a4a';g.beginPath();g.arc(200,150,60,0,7);g.fill();
+  g.fillStyle='#1c1230';g.fillRect(0,200,400,40);
+  for(const[a,col]of[[p,'#3b82f6'],[c,'#e24b3b']]){
+    const fl=a.hit>0&&((a.hit|0)%2);
+    g.fillStyle=fl?'#fff':col;g.fillRect(a.x-14,140,28,60);
+    g.fillStyle=fl?'#fff':'#f0c8a0';g.beginPath();g.arc(a.x,128,13,0,7);g.fill();
+    g.fillStyle=col;
+    if(a.atk>0){const e=a.atk<=14&&a.atk>7?44:16;g.fillRect(a.f>0?a.x+8:a.x-8-e,158,e,9);g.fillStyle='#f0c8a0';g.fillRect(a.f>0?a.x+8+e-6:a.x-8-e,157,6,11)}
+    if(a.blk){g.strokeStyle='#8ff';g.lineWidth=5;g.beginPath();g.arc(a.x+a.f*8,165,34,a.f>0?-1.1:Math.PI-1.1+.2,a.f>0?1.1:Math.PI+1.1);g.stroke()}
+  }
+  for(const[a,x,col]of[[p,10,'#3b82f6'],[c,210,'#e24b3b']]){
+    g.fillStyle='rgba(255,255,255,.2)';g.fillRect(x,10,180,14);
+    g.fillStyle=col;g.fillRect(x,10,180*Math.max(0,a.hp)/100,14)}
+  T(g,'VOCÊ',50,40,12);T(g,'CPU',350,40,12);
+  if(F.s=='over'){T(g,p.hp>0?'Você venceu! 🏆':'K.O.! A CPU venceu',200,100,26);T(g,'Toque ou Espaço para lutar de novo',200,124,13)}
+}
+GM['s-luta']=lf(upd,'l');upd(0);
+})();
+
+})();
+
+</script>
+<script>
+/* Adicionado pelo site 3D Barros: abre direto um jogo pelo endereço (ex.: #s-tenis),
+   para cada jogo ter o próprio link no portfólio. O arcade em si não mudou. */
+(function(){
+  function porHash(){ var id=location.hash.slice(1); if(id&&document.getElementById(id)) show(id); }
+  window.addEventListener('hashchange',porHash); porHash();
+})();
+</script>
+</body>
+</html>

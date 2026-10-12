@@ -4,364 +4,62 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>3D Barros</title>
-  <meta name="description" content="A casa dos projetos da família de Barros: impressões 3D, sites, jogos e ideias feitos por nós 3.">
-  <meta name="theme-color" content="#ff6b4a">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff6b4a'/%3E%3Ctext x='32' y='46' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='38' text-anchor='middle' fill='%23fff'%3E3D%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="Portfólio da família de Barros: impressão 3D, software e invenções de um pai e dois filhos.">
+  <meta name="theme-color" content="#0f1419">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230f1419'/%3E%3Ctext x='32' y='45' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='34' text-anchor='middle' fill='%23ff7a2f'%3E3D%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --coral: #ff6b4a;  --coral-dark: #c23f22;  --coral-soft: #ffe3da;
-      --sol:   #ffc93c;  --sol-dark:   #c48f00;  --sol-soft:   #fff2c2;
-      --mar:   #3d8bff;  --mar-dark:   #1f4fb3;  --mar-soft:   #dbe8ff;
-
-      --bg: #fff8f1;
-      --surface: #ffffff;
-      --ink: #1f2430;
-      --muted: #67707f;
-      --line: #eadfd4;
-      --shadow: 0 14px 40px rgba(60, 40, 20, .10);
-      --radius: 22px;
-      --hl: var(--sol);
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg: #14171f;
-        --surface: #1d2230;
-        --ink: #f1f3f8;
-        --muted: #a2abbb;
-        --line: #2c3344;
-        --shadow: 0 14px 40px rgba(0, 0, 0, .45);
-        --coral-soft: #4a2a22; --sol-soft: #45391a; --mar-soft: #1e2d4d;
-        --hl: #8a6400;
-      }
-    }
-    :root[data-theme="dark"] {
-      --bg: #14171f;
-      --surface: #1d2230;
-      --ink: #f1f3f8;
-      --muted: #a2abbb;
-      --line: #2c3344;
-      --shadow: 0 14px 40px rgba(0, 0, 0, .45);
-      --coral-soft: #4a2a22; --sol-soft: #45391a; --mar-soft: #1e2d4d;
-        --hl: #8a6400;
-    }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: Nunito, system-ui, -apple-system, "Segoe UI", sans-serif;
-      font-size: 17px;
-      line-height: 1.55;
-      color: var(--ink);
-      background: var(--bg);
-      background-image:
-        radial-gradient(circle at 12% 8%, var(--coral-soft) 0, transparent 28%),
-        radial-gradient(circle at 88% 12%, var(--sol-soft) 0, transparent 26%),
-        radial-gradient(circle at 70% 90%, var(--mar-soft) 0, transparent 30%);
-      background-attachment: fixed;
-    }
-    a { color: inherit; }
-    .wrap { width: min(1080px, 100% - 32px); margin: 0 auto; }
-
-    /* ---------- topo ---------- */
-    .top {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 0;
-    }
-    .top .mark { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; white-space: nowrap; }
-    .top .mark b { color: var(--coral); }
-    .top nav { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-    .top nav a {
-      text-decoration: none; font-weight: 700; font-size: 15px; color: var(--muted);
-      padding: 8px 12px; border-radius: 999px;
-    }
-    .top nav a:hover { background: var(--surface); color: var(--ink); }
-
-    /* ---------- hero ---------- */
-    .hero { padding: 48px 0 24px; text-align: center; }
-    .logo {
-      display: inline-flex; align-items: baseline; gap: .12em; flex-wrap: wrap; justify-content: center;
-      font-family: "Baloo 2", sans-serif; font-weight: 800; line-height: .95; letter-spacing: -.02em;
-      font-size: clamp(64px, 15vw, 150px);
-      margin: 0;
-      perspective: 600px;
-    }
-    .logo .g {
-      display: inline-block;
-      transform: rotateX(8deg) rotateY(-6deg);
-      transition: transform .35s ease;
-    }
-    .logo .g.c { color: var(--coral); text-shadow: 1px 1px 0 var(--coral-dark), 2px 2px 0 var(--coral-dark), 3px 3px 0 var(--coral-dark), 4px 4px 0 var(--coral-dark), 5px 5px 0 var(--coral-dark), 6px 6px 0 var(--coral-dark), 7px 7px 0 var(--coral-dark), 8px 8px 0 var(--coral-dark), 12px 14px 20px rgba(0,0,0,.18); }
-    .logo .g.m { color: var(--mar);   text-shadow: 1px 1px 0 var(--mar-dark), 2px 2px 0 var(--mar-dark), 3px 3px 0 var(--mar-dark), 4px 4px 0 var(--mar-dark), 5px 5px 0 var(--mar-dark), 6px 6px 0 var(--mar-dark), 7px 7px 0 var(--mar-dark), 8px 8px 0 var(--mar-dark), 12px 14px 20px rgba(0,0,0,.18); }
-    .logo:hover .g { transform: rotateX(-6deg) rotateY(8deg); }
-    .logo .word {
-      font-size: .42em; color: var(--ink); margin-left: .25em;
-      background: linear-gradient(transparent 62%, var(--hl) 62%, var(--hl) 92%, transparent 92%);
-      padding: 0 .1em;
-    }
-    .tagline { font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; margin: 34px 0 8px; }
-    .sub { color: var(--muted); max-width: 560px; margin: 0 auto; }
-
-    .trio { display: inline-flex; align-items: center; gap: 10px; margin-top: 22px; color: var(--muted); font-weight: 700; font-size: 15px; }
-    .trio .dots { display: inline-flex; }
-    .trio .dots i {
-      width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--bg);
-      display: inline-block; margin-left: -9px;
-    }
-    .trio .dots i:first-child { margin-left: 0; }
-    .trio .dots i:nth-child(1) { background: var(--coral); }
-    .trio .dots i:nth-child(2) { background: var(--sol); }
-    .trio .dots i:nth-child(3) { background: var(--mar); }
-
-    /* ---------- seções ---------- */
-    section { padding: 44px 0; }
-    h2 {
-      font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: clamp(28px, 4vw, 36px);
-      line-height: 1.1; margin: 0 0 6px;
-    }
-    .lead { color: var(--muted); margin: 0 0 24px; }
-
-    /* ---------- cartões ---------- */
-    .grid {
-      display: grid; gap: 18px;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    }
-    .card {
-      position: relative; display: flex; flex-direction: column; gap: 10px;
-      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 22px; text-decoration: none; min-height: 210px;
-      box-shadow: 0 2px 0 var(--line);
-      transition: transform .2s ease, box-shadow .2s ease;
-    }
-    .card:hover, .card:focus-visible { transform: translateY(-4px); box-shadow: var(--shadow); outline: none; }
-    .card .ico {
-      width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
-      font-size: 28px; color: #fff; background: var(--c, var(--mar));
-      box-shadow: 0 4px 0 var(--c-dark, var(--mar-dark));
-    }
-    .card h3 { margin: 6px 0 0; font-family: "Baloo 2", sans-serif; font-size: 24px; line-height: 1.1; }
-    .card p { margin: 0; color: var(--muted); font-size: 15.5px; flex: 1; }
-    .card .meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); font-weight: 700; }
-    .card .meta span { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
-    .card .go {
-      position: absolute; right: 18px; top: 18px; width: 34px; height: 34px; border-radius: 50%;
-      display: grid; place-items: center; color: var(--muted); border: 1px solid var(--line); font-size: 18px;
-      transition: .2s;
-    }
-    .card:hover .go { background: var(--c, var(--mar)); color: #fff; border-color: transparent; }
-    .card.coral { --c: var(--coral); --c-dark: var(--coral-dark); }
-    .card.sol   { --c: var(--sol);   --c-dark: var(--sol-dark); }
-    .card.mar   { --c: var(--mar);   --c-dark: var(--mar-dark); }
-
-    .card.novo {
-      border: 2px dashed var(--line); background: transparent; box-shadow: none;
-      align-items: center; justify-content: center; text-align: center; color: var(--muted);
-    }
-    .card.novo .ico { background: transparent; color: var(--muted); border: 2px dashed var(--line); box-shadow: none; }
-    .card.novo h3 { color: var(--ink); }
-    .card.novo:hover { border-color: var(--coral); color: var(--ink); }
-
-    .vazio { color: var(--muted); font-style: italic; }
-    .card.sol .ico { color: #3a2a00; }
-
-    /* ---------- cartão fixo das peças 3D ---------- */
-    .oficina { padding: 10px 0 30px; }
-    .oficina-card {
-      display: flex; align-items: center; gap: 24px; text-decoration: none;
-      background: linear-gradient(135deg, var(--coral) 0%, #ff8a5c 60%, var(--sol) 140%);
-      color: #fff; border-radius: var(--radius); padding: 26px 28px;
-      box-shadow: 0 6px 0 var(--coral-dark), var(--shadow); transition: transform .2s ease;
-    }
-    .oficina-card:hover, .oficina-card:focus-visible { transform: translateY(-3px); outline: none; }
-    .oficina-card svg { width: 84px; height: 84px; flex: none; }
-    .oficina-txt { flex: 1; min-width: 0; }
-    .oficina-card h2 { margin: 0 0 4px; color: #fff; }
-    .oficina-card p { margin: 0; color: rgba(255, 255, 255, .9); font-size: 16px; max-width: 560px; }
-    .oficina-qtd { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; background: rgba(255, 255, 255, .22); border-radius: 999px; padding: 4px 12px; }
-    .btn {
-      flex: none; background: #fff; color: var(--coral-dark); font-weight: 800; font-family: "Baloo 2", sans-serif; font-size: 18px;
-      padding: 12px 20px; border-radius: 999px; box-shadow: 0 4px 0 rgba(0, 0, 0, .15); white-space: nowrap;
-    }
-
-    /* ---------- as 3 pessoas ---------- */
-    .pessoas { display: grid; gap: 18px; grid-template-columns: repeat(3, 1fr); }
-    .pessoa {
-      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
-      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 26px 20px 22px; text-decoration: none; box-shadow: 0 2px 0 var(--line);
-      border-top: 6px solid var(--c); transition: transform .2s ease, box-shadow .2s ease;
-    }
-    .pessoa:hover, .pessoa:focus-visible { transform: translateY(-4px); box-shadow: var(--shadow); outline: none; }
-    .av {
-      width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
-      background: var(--c); color: #fff; font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 30px;
-      box-shadow: 0 4px 0 var(--c-dark); flex: none;
-    }
-    .sol .av { color: #3a2a00; }
-    .pessoa h3 { margin: 8px 0 0; font-family: "Baloo 2", sans-serif; font-size: 26px; line-height: 1; }
-    .pessoa .papel { color: var(--muted); font-weight: 700; font-size: 14px; }
-    .pessoa .frase { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
-    .pessoa .qtd { margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--muted); }
-    .coral { --c: var(--coral); --c-dark: var(--coral-dark); --c-soft: var(--coral-soft); }
-    .sol   { --c: var(--sol);   --c-dark: var(--sol-dark);   --c-soft: var(--sol-soft); }
-    .mar   { --c: var(--mar);   --c-dark: var(--mar-dark);   --c-soft: var(--mar-soft); }
-    .secao-head .papel { color: var(--muted); }
-
-    /* ---------- seção de cada pessoa ---------- */
-    .secao { padding: 44px 0; scroll-margin-top: 16px; }
-    .secao-head { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
-    .secao-head .av { width: 56px; height: 56px; font-size: 26px; }
-    .secao-head h2 { margin: 0; }
-    .secao-head .papel { font-weight: 700; font-size: 15px; }
-    .secao .grid { border-left: 4px solid var(--c); padding-left: 18px; }
-
-    /* ---------- como ---------- */
-    .passos { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); counter-reset: passo; }
-    .passo {
-      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px;
-    }
-    .passo::before {
-      counter-increment: passo; content: counter(passo);
-      display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
-      font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 20px; color: #fff; margin-bottom: 10px;
-    }
-    .passo:nth-child(1)::before { background: var(--coral); }
-    .passo:nth-child(2)::before { background: var(--sol); color: #3a2a00; }
-    .passo:nth-child(3)::before { background: var(--mar); }
-    .passo h3 { margin: 0 0 6px; font-size: 19px; }
-    .passo p { margin: 0; color: var(--muted); font-size: 15.5px; }
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em;
-      background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px;
-    }
-
-    /* ---------- regras ---------- */
-    .regras {
-      background: var(--sol-soft); border-radius: var(--radius); padding: 24px 26px;
-      display: flex; gap: 18px; align-items: flex-start;
-    }
-    .regras .big { font-size: 40px; line-height: 1; }
-    .regras h3 { margin: 0 0 6px; font-family: "Baloo 2", sans-serif; font-size: 22px; }
-    .regras p { margin: 0; }
-
-    /* ---------- rodapé ---------- */
-    footer {
-      padding: 36px 0 44px; color: var(--muted); font-size: 14px;
-      display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-      border-top: 1px solid var(--line); margin-top: 20px;
-    }
-    footer a { font-weight: 700; }
-
-    @media (max-width: 600px) {
-      .top { flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 14px; }
-      .top nav { justify-content: flex-start; margin-left: -8px; }
-      .top nav a { padding: 6px 8px; font-size: 14px; }
-      .hero { padding-top: 28px; }
-      .regras { flex-direction: column; gap: 8px; }
-      .card { min-height: 0; }
-      .pessoas { grid-template-columns: 1fr; }
-      .oficina-card { flex-direction: column; align-items: flex-start; gap: 14px; padding: 22px; }
-      .oficina-card svg { width: 56px; height: 56px; }
-      .secao .grid { border-left: 0; padding-left: 0; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .logo .g, .card, .card .go, .pessoa { transition: none; }
-      .logo:hover .g { transform: rotateX(8deg) rotateY(-6deg); }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
 </head>
 <body>
   <div class="wrap">
     <header class="top">
-      <a class="mark" href="#"><b>3D</b> Barros</a>
+      <a class="mark" href="#">3D Barros</a>
       <nav aria-label="Seções">
         <a href="#matheus">Matheus</a>
         <a href="#rafael">Rafael</a>
         <a href="#andre">André</a>
-        <a href="pecas/">Peças 3D</a>
-        <a href="#como">Como adicionar</a>
+        <a href="#pecas">Peças</a>
+        <a href="https://github.com/rafaelcruzdebarros/nova">GitHub</a>
       </nav>
     </header>
 
     <main>
       <section class="hero" aria-labelledby="titulo">
-        <h1 class="logo" id="titulo" aria-label="3D Barros">
-          <span class="g c" aria-hidden="true">3</span><span class="g m" aria-hidden="true">D</span>
-          <span class="word" aria-hidden="true">Barros</span>
+        <h1 id="titulo" class="logo" aria-label="3D Barros">
+          <span class="layers" aria-hidden="true">3D</span>
+          <span class="name" aria-hidden="true">Barros</span>
         </h1>
-        <p class="tagline">Três de Barros. Tudo em 3D.</p>
-        <p class="sub">Somos três e trabalhamos com impressão 3D, daí o nome. Esta é a casa de tudo o que a gente cria: peças impressas, sites, jogos, robôs e invenções. Feito em casa, publicado para o mundo.</p>
-        <div class="trio" aria-label="Somos nós três">
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span>nós 3 + uma impressora 3D</span>
+        <div class="hero-txt">
+          <p class="lead">Impressão 3D, software e invenções. Um pai, dois filhos e uma oficina em casa.</p>
+          <p class="hero-links">
+            <a class="btn" href="pecas/">Peças impressas</a>
+            <a class="btn ghost" href="#quem">Projetos</a>
+          </p>
         </div>
       </section>
 
-      <section id="oficina" class="oficina" aria-labelledby="h-oficina">
-        <a class="oficina-card" href="pecas/">
-          <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="8" y="6" width="48" height="52" rx="6"/>
-            <path d="M8 18h48M18 18v8M46 18v8"/>
-            <path d="M18 26h28"/>
-            <path d="M30 26h4v5h-4z" fill="currentColor" stroke="none"/>
-            <path d="M8 46h48"/>
-            <path d="M32 33l8 4v8l-8 4-8-4v-8z"/>
-            <path d="M24 37l8 4 8-4M32 41v8"/>
-          </svg>
-          <div class="oficina-txt">
-            <h2 id="h-oficina">Peças impressas em 3D</h2>
-            <p>A galeria do que já saiu da nossa impressora: peças úteis, brinquedos, experimentos e o que mais a gente inventar.</p>
-            <span class="oficina-qtd" id="oficinaQtd"></span>
-          </div>
-          <span class="btn">Ver a galeria →</span>
-        </a>
-      </section>
-
-      <section id="os3" aria-labelledby="h-os3">
-        <h2 id="h-os3">Os 3</h2>
-        <p class="lead">Cada um tem o seu cantinho no site. Clique para ver os projetos.</p>
+      <section id="quem" class="quem" aria-labelledby="h-quem">
+        <h2 id="h-quem" class="visually-hidden">Quem faz</h2>
         <div class="pessoas" id="pessoas"></div>
       </section>
 
       <div id="secoes"></div>
 
-      <section id="como" aria-labelledby="h-como">
-        <h2 id="h-como">Como colocar um projeto novo aqui</h2>
-        <p class="lead">Três passos e pronto: o projeto aparece neste site.</p>
-        <div class="passos">
-          <article class="passo">
-            <h3>Crie a pasta do projeto</h3>
-            <p>Escolha um nome sem espaço nem acento, como <code>foguete</code>, e salve o <code>index.html</code> dentro dela.</p>
-          </article>
-          <article class="passo">
-            <h3>Anote na lista</h3>
-            <p>Abra o arquivo <code>projetos.js</code>, copie um bloco <code>{ ... }</code> e troque nome, descrição, emoji, link (<code>foguete/</code>) e <code>quem</code> fez.</p>
-          </article>
-          <article class="passo">
-            <h3>Publique</h3>
-            <p>Faça o commit. Em um ou dois minutos o cartão aparece em <code>3dbarros.com.br</code>.</p>
-          </article>
+      <section id="pecas" class="oficina" aria-labelledby="h-oficina">
+        <div class="oficina-txt">
+          <h2 id="h-oficina">Peças impressas</h2>
+          <p id="oficinaQtd"></p>
+          <a class="btn" href="pecas/">Abrir a galeria</a>
         </div>
-      </section>
-
-      <section aria-labelledby="h-regras">
-        <div class="regras">
-          <div class="big" aria-hidden="true">🔒</div>
-          <div>
-            <h3 id="h-regras">Regra da casa</h3>
-            <p>Qualquer pessoa na internet consegue ver este site. Por isso, nos projetos não entra nome completo, telefone, escola, endereço nem senha. Apelido e primeiro nome bastam.</p>
-          </div>
-        </div>
+        <div class="oficina-grid" id="oficinaGrid"></div>
       </section>
     </main>
 
     <footer>
-      <span>3dbarros.com.br · feito pelos de Barros</span>
-      <a href="https://github.com/rafaelcruzdebarros/nova">código no GitHub</a>
+      <span>3dbarros.com.br</span>
+      <span>feito em casa pelos de Barros</span>
     </footer>
   </div>
 
@@ -373,9 +71,6 @@
       var projetos = (typeof PROJETOS !== 'undefined' && Array.isArray(PROJETOS)) ? PROJETOS : [];
       var pecas = (typeof PECAS !== 'undefined' && Array.isArray(PECAS)) ? PECAS : [];
       var cores = ['coral', 'sol', 'mar'];
-      document.getElementById('oficinaQtd').textContent =
-        pecas.length === 0 ? 'Nenhuma peça ainda. A primeira vem aí!' :
-        pecas.length === 1 ? '1 peça na galeria' : pecas.length + ' peças na galeria';
       var elPessoas = document.getElementById('pessoas');
       var elSecoes = document.getElementById('secoes');
 
@@ -388,74 +83,85 @@
       function corValida(c, padrao) { return cores.indexOf(c) >= 0 ? c : padrao; }
       function quemFez(p) { return String(p.quem || '').trim().toLowerCase(); }
       function doId(id) { return function (p) { return quemFez(p) === id; }; }
+      function plural(n, um, varios) { return n === 1 ? '1 ' + um : n + ' ' + varios; }
 
-      function cardProjeto(p, corPadrao) {
-        var a = el('a', 'card ' + corValida(p.cor, corPadrao));
+      function tile(p, corPadrao) {
+        var a = el('a', 'tile ' + corValida(p.cor, corPadrao));
         a.href = p.link || '#';
         if (/^https?:\/\//.test(a.href)) { a.target = '_blank'; a.rel = 'noopener'; }
-        a.appendChild(el('span', 'ico', p.emoji || '★'));
-        a.appendChild(el('h3', null, p.nome || 'Sem nome'));
+        var head = el('div', 'tile-head');
+        if (p.emoji) head.appendChild(el('span', 'tile-ico', p.emoji));
+        head.appendChild(el('h3', null, p.nome || 'Sem nome'));
+        a.appendChild(head);
         a.appendChild(el('p', null, p.descricao || ''));
-        if (p.quando) {
-          var meta = el('div', 'meta');
-          meta.appendChild(el('span', null, p.quando));
-          a.appendChild(meta);
-        }
-        var go = el('span', 'go', '→');
-        go.setAttribute('aria-hidden', 'true');
-        a.appendChild(go);
+        if (p.quando) a.appendChild(el('span', 'tile-meta', p.quando));
         return a;
-      }
-
-      function cardVazio(texto) {
-        var a = el('a', 'card novo');
-        a.href = '#como';
-        a.appendChild(el('span', 'ico', '+'));
-        a.appendChild(el('h3', null, texto));
-        a.appendChild(el('p', null, 'Esse espaço é seu. Veja como colocar aqui.'));
-        return a;
-      }
-
-      function secao(id, cor, letra, titulo, papel, lista, textoVazio) {
-        var sec = el('section', 'secao ' + cor);
-        sec.id = id;
-        sec.setAttribute('aria-labelledby', 'h-' + id);
-        var head = el('div', 'secao-head');
-        head.appendChild(el('span', 'av', letra));
-        var tit = el('div');
-        tit.appendChild(el('h2', null, titulo)).id = 'h-' + id;
-        if (papel) tit.appendChild(el('div', 'papel', papel));
-        head.appendChild(tit);
-        sec.appendChild(head);
-        var grid = el('div', 'grid');
-        lista.forEach(function (p) { grid.appendChild(cardProjeto(p, cor)); });
-        if (!lista.length) grid.appendChild(cardVazio(textoVazio));
-        sec.appendChild(grid);
-        elSecoes.appendChild(sec);
       }
 
       pessoas.forEach(function (ps, i) {
         var cor = corValida(ps.cor, cores[i % cores.length]);
-        var letra = (ps.nome || '?').charAt(0).toUpperCase();
         var meus = projetos.filter(doId(ps.id));
+        var minhas = pecas.filter(doId(ps.id));
 
         var a = el('a', 'pessoa ' + cor);
         a.href = '#' + ps.id;
-        a.appendChild(el('span', 'av', letra));
         a.appendChild(el('h3', null, ps.nome || ps.id));
         if (ps.papel) a.appendChild(el('span', 'papel', ps.papel));
         if (ps.frase) a.appendChild(el('p', 'frase', ps.frase));
-        a.appendChild(el('span', 'qtd', meus.length === 1 ? '1 projeto' : meus.length + ' projetos'));
+        var num = el('span', 'num');
+        num.appendChild(el('span', null, plural(meus.length, 'projeto', 'projetos')));
+        num.appendChild(el('span', null, plural(minhas.length, 'peça impressa', 'peças impressas')));
+        a.appendChild(num);
         elPessoas.appendChild(a);
 
-        secao(ps.id, cor, letra, ps.nome || ps.id, ps.papel || '', meus,
-              'Primeiro projeto de ' + (ps.nome || ps.id));
+        var sec = el('section', 'secao ' + cor);
+        sec.id = ps.id;
+        sec.setAttribute('aria-labelledby', 'h-' + ps.id);
+        var head = el('div', 'secao-head');
+        head.appendChild(el('h2', null, ps.nome || ps.id)).id = 'h-' + ps.id;
+        if (ps.papel) head.appendChild(el('span', 'papel', ps.papel));
+        sec.appendChild(head);
+        if (meus.length) {
+          var grid = el('div', 'tiles');
+          meus.forEach(function (p) { grid.appendChild(tile(p, cor)); });
+          sec.appendChild(grid);
+        } else {
+          sec.appendChild(el('p', 'vazio', 'Nenhum projeto publicado ainda.'));
+        }
+        elSecoes.appendChild(sec);
       });
 
       var ids = pessoas.map(function (ps) { return ps.id; });
       var emFamilia = projetos.filter(function (p) { return ids.indexOf(quemFez(p)) < 0; });
       if (emFamilia.length) {
-        secao('todos', 'coral', '3', 'Feito pelos 3', 'projetos em família', emFamilia, '');
+        var sec = el('section', 'secao');
+        sec.id = 'todos';
+        var head = el('div', 'secao-head');
+        head.appendChild(el('h2', null, 'Feito pelos três'));
+        sec.appendChild(head);
+        var grid = el('div', 'tiles');
+        emFamilia.forEach(function (p) { grid.appendChild(tile(p, 'coral')); });
+        sec.appendChild(grid);
+        elSecoes.appendChild(sec);
+      }
+
+      // Peças: contagem e as últimas com foto
+      document.getElementById('oficinaQtd').textContent =
+        pecas.length ? plural(pecas.length, 'peça na galeria', 'peças na galeria') : 'As primeiras peças estão a caminho.';
+      var og = document.getElementById('oficinaGrid');
+      var comFoto = pecas.filter(function (p) { return p.foto; }).slice(-4).reverse();
+      if (comFoto.length) {
+        comFoto.forEach(function (p) {
+          var a = el('a', 'foto');
+          a.href = 'pecas/';
+          var img = el('img');
+          img.src = 'pecas/' + p.foto; img.alt = p.nome || 'Peça impressa em 3D'; img.loading = 'lazy';
+          a.appendChild(img);
+          a.appendChild(el('span', null, p.nome || ''));
+          og.appendChild(a);
+        });
+      } else {
+        for (var k = 0; k < 4; k++) og.appendChild(el('div', 'foto vazia'));
       }
     })();
   </script>
