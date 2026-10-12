@@ -41,7 +41,7 @@ const PROJETOS = [
     descricao: "Uma assistente de IA que conversa, muda de humor conforme o papo e lê as respostas em voz alta.",
     emoji: "✦",
     link: "public/",
-    quem: "todos",
+    quem: "rafael",
     quando: "2026"
   }
 ];
