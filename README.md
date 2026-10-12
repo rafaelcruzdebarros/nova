@@ -12,6 +12,8 @@ O GitHub Pages publica a raiz deste repositório. Cada pasta vira um endereço:
 | --- | --- |
 | `index.html` | `3dbarros.com.br` (a home) |
 | `projetos.js` | as 3 pessoas e a lista dos projetos que aparecem na home |
+| `pecas/` | `3dbarros.com.br/pecas/`, a galeria das peças impressas em 3D |
+| `pecas/pecas.js` | lista das peças; as fotos ficam em `pecas/fotos/` |
 | `404.html` | página de endereço errado; volta para a home |
 | `public/` | `3dbarros.com.br/public/` (a Nova) |
 
@@ -20,6 +22,12 @@ O GitHub Pages publica a raiz deste repositório. Cada pasta vira um endereço:
 A home tem uma seção para cada um: Matheus, Rafael e André, cada um com a sua
 cor. O projeto aparece na seção de quem fez, conforme o campo `quem`. Projeto
 feito em família (`quem: "todos"`) entra em "Feito pelos 3".
+
+## Peças impressas em 3D
+
+A home tem um cartão fixo que leva à galeria em `pecas/`. Para incluir uma peça,
+salve a foto em `pecas/fotos/` e acrescente um bloco em `pecas/pecas.js` (os
+campos estão explicados no começo do arquivo). A galeria filtra por quem fez.
 
 ## Como adicionar um projeto
 

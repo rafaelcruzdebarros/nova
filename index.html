@@ -167,6 +167,25 @@
     .vazio { color: var(--muted); font-style: italic; }
     .card.sol .ico { color: #3a2a00; }
 
+    /* ---------- cartão fixo das peças 3D ---------- */
+    .oficina { padding: 10px 0 30px; }
+    .oficina-card {
+      display: flex; align-items: center; gap: 24px; text-decoration: none;
+      background: linear-gradient(135deg, var(--coral) 0%, #ff8a5c 60%, var(--sol) 140%);
+      color: #fff; border-radius: var(--radius); padding: 26px 28px;
+      box-shadow: 0 6px 0 var(--coral-dark), var(--shadow); transition: transform .2s ease;
+    }
+    .oficina-card:hover, .oficina-card:focus-visible { transform: translateY(-3px); outline: none; }
+    .oficina-card svg { width: 84px; height: 84px; flex: none; }
+    .oficina-txt { flex: 1; min-width: 0; }
+    .oficina-card h2 { margin: 0 0 4px; color: #fff; }
+    .oficina-card p { margin: 0; color: rgba(255, 255, 255, .9); font-size: 16px; max-width: 560px; }
+    .oficina-qtd { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; background: rgba(255, 255, 255, .22); border-radius: 999px; padding: 4px 12px; }
+    .btn {
+      flex: none; background: #fff; color: var(--coral-dark); font-weight: 800; font-family: "Baloo 2", sans-serif; font-size: 18px;
+      padding: 12px 20px; border-radius: 999px; box-shadow: 0 4px 0 rgba(0, 0, 0, .15); white-space: nowrap;
+    }
+
     /* ---------- as 3 pessoas ---------- */
     .pessoas { display: grid; gap: 18px; grid-template-columns: repeat(3, 1fr); }
     .pessoa {
@@ -244,6 +263,8 @@
       .regras { flex-direction: column; gap: 8px; }
       .card { min-height: 0; }
       .pessoas { grid-template-columns: 1fr; }
+      .oficina-card { flex-direction: column; align-items: flex-start; gap: 14px; padding: 22px; }
+      .oficina-card svg { width: 56px; height: 56px; }
       .secao .grid { border-left: 0; padding-left: 0; }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -261,6 +282,7 @@
         <a href="#matheus">Matheus</a>
         <a href="#rafael">Rafael</a>
         <a href="#andre">André</a>
+        <a href="pecas/">Peças 3D</a>
         <a href="#como">Como adicionar</a>
       </nav>
     </header>
@@ -277,6 +299,26 @@
           <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span>nós 3 + uma impressora 3D</span>
         </div>
+      </section>
+
+      <section id="oficina" class="oficina" aria-labelledby="h-oficina">
+        <a class="oficina-card" href="pecas/">
+          <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="6" width="48" height="52" rx="6"/>
+            <path d="M8 18h48M18 18v8M46 18v8"/>
+            <path d="M18 26h28"/>
+            <path d="M30 26h4v5h-4z" fill="currentColor" stroke="none"/>
+            <path d="M8 46h48"/>
+            <path d="M32 33l8 4v8l-8 4-8-4v-8z"/>
+            <path d="M24 37l8 4 8-4M32 41v8"/>
+          </svg>
+          <div class="oficina-txt">
+            <h2 id="h-oficina">Peças impressas em 3D</h2>
+            <p>A galeria do que já saiu da nossa impressora: peças úteis, brinquedos, experimentos e o que mais a gente inventar.</p>
+            <span class="oficina-qtd" id="oficinaQtd"></span>
+          </div>
+          <span class="btn">Ver a galeria →</span>
+        </a>
       </section>
 
       <section id="os3" aria-labelledby="h-os3">
@@ -324,11 +366,16 @@
   </div>
 
   <script src="projetos.js"></script>
+  <script src="pecas/pecas.js"></script>
   <script>
     (function () {
       var pessoas = (typeof PESSOAS !== 'undefined' && Array.isArray(PESSOAS)) ? PESSOAS : [];
       var projetos = (typeof PROJETOS !== 'undefined' && Array.isArray(PROJETOS)) ? PROJETOS : [];
+      var pecas = (typeof PECAS !== 'undefined' && Array.isArray(PECAS)) ? PECAS : [];
       var cores = ['coral', 'sol', 'mar'];
+      document.getElementById('oficinaQtd').textContent =
+        pecas.length === 0 ? 'Nenhuma peça ainda. A primeira vem aí!' :
+        pecas.length === 1 ? '1 peça na galeria' : pecas.length + ' peças na galeria';
       var elPessoas = document.getElementById('pessoas');
       var elSecoes = document.getElementById('secoes');
 
