@@ -63,10 +63,20 @@
     </footer>
   </div>
 
-  <script src="projetos.js"></script>
-  <script src="pecas/pecas.js"></script>
   <script>
-    (function () {
+    // Os dados (projetos.js e pecas/pecas.js) são carregados com um carimbo de hora
+    // no endereço, para o navegador não reaproveitar a versão antiga do cache quando
+    // a lista muda. A página só monta depois que os dois chegaram (ou falharam).
+    function carregarDados(arquivos, pronto) {
+      var faltam = arquivos.length, t = Date.now();
+      arquivos.forEach(function (src) {
+        var s = document.createElement('script');
+        s.src = src + '?t=' + t;
+        s.onload = s.onerror = function () { if (--faltam === 0) pronto(); };
+        document.head.appendChild(s);
+      });
+    }
+    carregarDados(['projetos.js', 'pecas/pecas.js'], function () {
       var pessoas = (typeof PESSOAS !== 'undefined' && Array.isArray(PESSOAS)) ? PESSOAS : [];
       var projetos = (typeof PROJETOS !== 'undefined' && Array.isArray(PROJETOS)) ? PROJETOS : [];
       var pecas = (typeof PECAS !== 'undefined' && Array.isArray(PECAS)) ? PECAS : [];
@@ -163,7 +173,7 @@
       } else {
         for (var k = 0; k < 4; k++) og.appendChild(el('div', 'foto vazia'));
       }
-    })();
+    });
   </script>
 </body>
 </html>
