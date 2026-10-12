@@ -26,9 +26,12 @@ um com a sua cor. O projeto aparece na seção de quem fez, conforme o campo
 `quem`. Projeto feito em família (`quem: "todos"`) entra em "Feito pelos três".
 
 O Arcade do André (`andre/arcade/`) é uma cópia do repositório
-`andrecruzdebarros/jogos`, com um script no fim que abre um jogo direto pelo
-endereço (`#s-tenis`). Para atualizar, copie o `index.html` de lá por cima e
-recoloque esse script.
+`andrecruzdebarros/jogos`, com duas adições do site, marcadas no fim do arquivo:
+um script que abre um jogo direto pelo endereço (`#s-tenis`) e um CSS que, em
+celular deitado, faz o quadro dos jogos caber na tela. O Circuito Mortal também
+ganhou controles por toque (dois joysticks e o botão FOGO), dentro do próprio
+jogo. Para atualizar a partir do repositório do André, copie o `index.html` por
+cima e recoloque essas adições.
 
 ## Peças impressas em 3D
 
