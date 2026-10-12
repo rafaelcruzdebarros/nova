@@ -1,7 +1,8 @@
 # 3D Barros
 
 Site da família de Barros, publicado em [3dbarros.com.br](https://3dbarros.com.br).
-É a casa de tudo o que nós 3 criamos: sites, jogos, experimentos e ideias.
+O nome é um trocadilho duplo: somos três de Barros e trabalhamos com impressão 3D.
+É a casa de tudo o que nós 3 criamos: peças impressas, sites, jogos, experimentos e ideias.
 
 ## Como o site funciona
 
