@@ -43,5 +43,63 @@ const PROJETOS = [
     link: "public/",
     quem: "rafael",
     quando: "2026"
+  },
+
+  // Jogos do Arcade do André (andre/arcade/). Cada link abre um jogo direto.
+  {
+    nome: "Tênis",
+    descricao: "Partida contra a CPU: mouse, toque, teclado ou controle. Vence quem fizer 3 games.",
+    emoji: "🎾",
+    link: "andre/arcade/#s-tenis",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
+    nome: "Jogo da Velha",
+    descricao: "Você com o X, a CPU com o O.",
+    emoji: "❌",
+    link: "andre/arcade/#s-velha",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
+    nome: "Memória",
+    descricao: "Vire as cartas e ache os pares.",
+    emoji: "🧠",
+    link: "andre/arcade/#s-mem",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
+    nome: "Circuito Mortal 2K",
+    descricao: "Corrida em neon, com suporte a gamepad.",
+    emoji: "🏎️",
+    link: "andre/arcade/#s-circ",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
+    nome: "Soccer Star",
+    descricao: "Futebol para 1 ou 2 jogadores.",
+    emoji: "🥅",
+    link: "andre/arcade/#s-soccer",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
+    nome: "Hóquei de Mesa",
+    descricao: "Air hockey contra a CPU.",
+    emoji: "🏒",
+    link: "andre/arcade/#s-hoquei",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
+    nome: "Luta",
+    descricao: "Soco e defesa contra a CPU, no teclado ou na tela.",
+    emoji: "🥊",
+    link: "andre/arcade/#s-luta",
+    quem: "andre",
+    quando: "10/2026"
   }
 ];
