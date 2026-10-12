@@ -88,7 +88,7 @@ const PROJETOS = [
   },
   {
     nome: "Hóquei de Mesa",
-    descricao: "Air hockey contra a CPU.",
+    descricao: "Air hockey contra a CPU ou em dupla, no mesmo aparelho.",
     emoji: "🏒",
     link: "andre/arcade/#s-hoquei",
     quem: "andre",
