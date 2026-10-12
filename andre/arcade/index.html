@@ -4,49 +4,70 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-
-:root{--bg:#f1f4ef;--fg:#18261d;--card:#fff;--mut:#5b6b60;--you:#1f5fbf;--cpu:#d9622b;
+/* Visual do 3D Barros (site.css): grafite, grade da mesa, ciano do André. As classes e as
+   variáveis (--you, --cpu, --card…) são as originais do arcade; só o estilo mudou. */
+:root{--bg:#0f1419;--fg:#e9eef3;--card:#161c24;--line:#273039;--mut:#8d99a6;--you:#35d0dc;--cpu:#ff7a2f;--ok:#7ad96a;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a14;--fg:#e8efe9;--card:#1a2a20;--mut:#93a89a}}
-:root[data-theme="dark"]{--bg:#101a14;--fg:#e8efe9;--card:#1a2a20;--mut:#93a89a}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:"Trebuchet MS",system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px}
-h1{margin:0;font-size:1.3rem;letter-spacing:.02em}
-.sb{width:100%;max-width:420px;background:var(--card);border-radius:10px;padding:8px 14px;display:grid;grid-template-columns:1fr auto auto;gap:4px 18px;align-items:center;font-size:1rem}
-.sb span.h{color:var(--mut);font-size:.8rem;text-align:center}
-.sb b{text-align:center;min-width:2.2em;font-variant-numeric:tabular-nums}
-.sb .n::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;background:var(--c)}
-canvas{height:calc(100dvh - 240px);min-height:300px;max-height:700px;width:auto;max-width:100%;aspect-ratio:3/5;border-radius:10px;touch-action:none;display:block;cursor:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{margin:0;background-color:var(--bg);color:var(--fg);font-family:Manrope,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:14px;gap:10px;
+background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:36px 36px;background-position:center top;min-height:100dvh}
+h1{margin:0;font-family:"Chakra Petch",Manrope,sans-serif;font-weight:700;font-size:1.5rem;line-height:1.05;letter-spacing:.01em}
+button{font:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid #ffc93c;outline-offset:3px}
+.sb{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 14px;display:grid;grid-template-columns:1fr auto auto;gap:4px 18px;align-items:center;font-size:1rem}
+.sb span.h{color:var(--mut);font-size:.75rem;text-align:center;font-weight:700}
+.sb b{text-align:center;min-width:2.2em;font-family:"Chakra Petch",sans-serif;font-variant-numeric:tabular-nums;font-size:1.15rem}
+.sb .n{font-weight:700}
+.sb .n::before{content:"";display:inline-block;width:10px;height:10px;margin-right:8px;background:var(--c);vertical-align:0}
+canvas{height:calc(100dvh - 240px);min-height:300px;max-height:700px;width:auto;max-width:100%;aspect-ratio:3/5;border-radius:6px;border:1px solid var(--line);touch-action:none;display:block;cursor:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 body{overscroll-behavior:none}
 .tc{display:none}
-@media (pointer:coarse){.pc{display:none}.tc{display:block}h1{font-size:1.1rem}body{padding:8px;gap:6px}}
-p{margin:0;color:var(--mut);font-size:.85rem;text-align:center;max-width:420px}
+@media (pointer:coarse){.pc{display:none}.tc{display:block}body{padding:10px;gap:8px}}
+p{margin:0;color:var(--mut);font-size:.85rem;text-align:center;max-width:420px;line-height:1.5}
 
 .scr{display:none;width:100%;flex-direction:column;align-items:center;gap:10px}
 .scr.on{display:flex}
-.back{align-self:flex-start;background:var(--card);color:var(--fg);border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
-.menu{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:420px}
-.card{background:var(--card);color:var(--fg);border:2px solid transparent;border-radius:14px;padding:18px 10px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .12s,border-color .12s}
-.card:hover,.card:focus-visible{transform:translateY(-3px);border-color:var(--you);outline:0}
-.card i{font-style:normal;font-size:2.6rem}
-.card b{font-size:1.05rem}
-.card small{color:var(--mut)}
+.back{align-self:flex-start;background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font-weight:700;font-size:.85rem;cursor:pointer}
+.back:hover{color:var(--fg);border-color:var(--fg)}
+
+/* menu */
+.topo{width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 6px}
+.topo a{color:var(--mut);text-decoration:none;font-weight:700;font-size:.85rem}
+.topo a:hover{color:var(--fg)}
+.topo span{color:var(--you);font-weight:700;font-size:.85rem}
+#s-menu h1{font-size:clamp(2.2rem,8vw,3rem);width:100%;max-width:520px;margin-top:6px}
+#s-menu h1::after{content:"";display:block;width:56px;height:4px;background:var(--you);margin-top:10px}
+#s-menu p{width:100%;max-width:520px;text-align:left;margin-bottom:8px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:520px}
+.card{background:var(--card);color:var(--fg);border:1px solid var(--line);border-top:3px solid var(--you);border-radius:6px;padding:16px 12px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;transition:border-color .12s}
+.card:hover,.card:focus-visible{border-color:var(--you);outline:0}
+.card i{font-style:normal;font-size:1.7rem;line-height:1;margin-bottom:8px}
+.card b{font-family:"Chakra Petch",sans-serif;font-size:1.15rem;line-height:1.1}
+.card small{color:var(--mut);font-size:.8rem}
+
+/* tabuleiros e botões */
 .grid{display:grid;gap:8px;width:100%;max-width:360px}
-.grid button{aspect-ratio:1;border:0;border-radius:12px;background:var(--card);color:var(--fg);font-size:2.2rem;font-weight:bold;cursor:pointer}
+.grid button{aspect-ratio:1;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg);font-size:2.2rem;font-weight:bold;cursor:pointer}
+.grid button:hover{border-color:var(--you)}
 #vb{grid-template-columns:repeat(3,1fr)}
 #mb{grid-template-columns:repeat(4,1fr)}
-#mb button.up{background:var(--you)}
-#mb button.ok{background:#2c7a4b}
-.st{font-size:1.1rem;min-height:1.6em;text-align:center}
-.rs{background:var(--you);color:#fff;border:0;border-radius:8px;padding:8px 18px;font:inherit;cursor:pointer}
+#mb button.up{background:var(--you);border-color:var(--you);color:var(--bg)}
+#mb button.ok{background:var(--ok);border-color:var(--ok);color:var(--bg)}
+.st{font-family:"Chakra Petch",sans-serif;font-size:1.1rem;min-height:1.6em;text-align:center}
+.rs{background:var(--you);color:var(--bg);border:0;border-radius:6px;padding:10px 20px;font-weight:700;cursor:pointer}
+.rs:hover{filter:brightness(1.1)}
 </style>
 </head>
 <body>
 <section class="scr on" id="s-menu">
-  <h1 style="font-size:1.8rem">Arcade 🎮</h1>
-  <p>Escolha um jogo</p>
+  <div class="topo"><a href="../../#andre">← 3D Barros</a><span>André</span></div>
+  <h1>Arcade</h1>
+  <p>Sete jogos feitos pelo André. Escolha um.</p>
   <div class="menu">
     <button class="card" data-go="s-tenis"><i>🎾</i><b>Tênis</b><small>Contra a CPU</small></button>
     <button class="card" data-go="s-velha"><i>❌⭕</i><b>Jogo da Velha</b><small>Contra a CPU</small></button>
@@ -87,20 +108,20 @@ p{margin:0;color:var(--mut);font-size:.85rem;text-align:center;max-width:420px}
 <style>
 #cf{aspect-ratio:5/3;height:auto;width:100%;max-width:520px;min-height:0}
 .pad{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.pad button{background:var(--card);color:var(--fg);border:0;border-radius:12px;padding:14px 20px;font:inherit;font-size:1.3rem;touch-action:none;-webkit-user-select:none;user-select:none}
-.pad button:active{background:var(--you);color:#fff}
+.pad button{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:14px 20px;font:inherit;font-size:1.2rem;font-weight:700;touch-action:none;-webkit-user-select:none;user-select:none;cursor:pointer}
+.pad button:active{background:var(--you);border-color:var(--you);color:var(--bg)}
 </style>
 <section class="scr" id="s-circ">
   <button class="back" data-go="s-menu">← Menu</button>
-  <iframe id="fcirc" title="Circuito Mortal 2K" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:0;border-radius:10px;background:#05050a"></iframe>
+  <iframe id="fcirc" title="Circuito Mortal 2K" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:1px solid #273039;border-radius:6px;background:#05050a"></iframe>
 </section>
 <section class="scr" id="s-soccer">
   <button class="back" data-go="s-menu">← Menu</button>
-  <iframe id="fsoccer" title="Soccer Star" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:0;border-radius:10px;background:#0e2a1a"></iframe>
+  <iframe id="fsoccer" title="Soccer Star" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:1px solid #273039;border-radius:6px;background:#0e2a1a"></iframe>
 </section>
 <section class="scr" id="s-hoquei">
   <button class="back" data-go="s-menu">← Menu</button>
-  <iframe id="fhoquei" title="Hóquei de Mesa" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:0;border-radius:10px;background:#0d1b2a"></iframe>
+  <iframe id="fhoquei" title="Hóquei de Mesa" allow="gamepad *; autoplay; fullscreen" style="width:100%;height:calc(100dvh - 70px);min-height:420px;border:1px solid #273039;border-radius:6px;background:#0d1b2a"></iframe>
 </section>
 <section class="scr" id="s-luta">
   <button class="back" data-go="s-menu">← Menu</button>
