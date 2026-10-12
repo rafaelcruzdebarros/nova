@@ -71,9 +71,9 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 18px 0;
     }
-    .top .mark { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; }
+    .top .mark { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; white-space: nowrap; }
     .top .mark b { color: var(--coral); }
-    .top nav { display: flex; gap: 6px; }
+    .top nav { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
     .top nav a {
       text-decoration: none; font-weight: 700; font-size: 15px; color: var(--muted);
       padding: 8px 12px; border-radius: 999px;
@@ -165,6 +165,39 @@
     .card.novo:hover { border-color: var(--coral); color: var(--ink); }
 
     .vazio { color: var(--muted); font-style: italic; }
+    .card.sol .ico { color: #3a2a00; }
+
+    /* ---------- as 3 pessoas ---------- */
+    .pessoas { display: grid; gap: 18px; grid-template-columns: repeat(3, 1fr); }
+    .pessoa {
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 26px 20px 22px; text-decoration: none; box-shadow: 0 2px 0 var(--line);
+      border-top: 6px solid var(--c); transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .pessoa:hover, .pessoa:focus-visible { transform: translateY(-4px); box-shadow: var(--shadow); outline: none; }
+    .av {
+      width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--c); color: #fff; font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 30px;
+      box-shadow: 0 4px 0 var(--c-dark); flex: none;
+    }
+    .sol .av { color: #3a2a00; }
+    .pessoa h3 { margin: 8px 0 0; font-family: "Baloo 2", sans-serif; font-size: 26px; line-height: 1; }
+    .pessoa .papel { color: var(--muted); font-weight: 700; font-size: 14px; }
+    .pessoa .frase { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+    .pessoa .qtd { margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--muted); }
+    .coral { --c: var(--coral); --c-dark: var(--coral-dark); --c-soft: var(--coral-soft); }
+    .sol   { --c: var(--sol);   --c-dark: var(--sol-dark);   --c-soft: var(--sol-soft); }
+    .mar   { --c: var(--mar);   --c-dark: var(--mar-dark);   --c-soft: var(--mar-soft); }
+    .secao-head .papel { color: var(--muted); }
+
+    /* ---------- seção de cada pessoa ---------- */
+    .secao { padding: 44px 0; scroll-margin-top: 16px; }
+    .secao-head { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+    .secao-head .av { width: 56px; height: 56px; font-size: 26px; }
+    .secao-head h2 { margin: 0; }
+    .secao-head .papel { font-weight: 700; font-size: 15px; }
+    .secao .grid { border-left: 4px solid var(--c); padding-left: 18px; }
 
     /* ---------- como ---------- */
     .passos { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); counter-reset: passo; }
@@ -204,14 +237,18 @@
     footer a { font-weight: 700; }
 
     @media (max-width: 600px) {
-      .top nav a { padding: 8px 9px; font-size: 14px; }
+      .top { flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 14px; }
+      .top nav { justify-content: flex-start; margin-left: -8px; }
+      .top nav a { padding: 6px 8px; font-size: 14px; }
       .hero { padding-top: 28px; }
       .regras { flex-direction: column; gap: 8px; }
       .card { min-height: 0; }
+      .pessoas { grid-template-columns: 1fr; }
+      .secao .grid { border-left: 0; padding-left: 0; }
     }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .logo .g, .card, .card .go { transition: none; }
+      .logo .g, .card, .card .go, .pessoa { transition: none; }
       .logo:hover .g { transform: rotateX(8deg) rotateY(-6deg); }
     }
   </style>
@@ -221,7 +258,9 @@
     <header class="top">
       <a class="mark" href="#"><b>3D</b> Barros</a>
       <nav aria-label="Seções">
-        <a href="#projetos">Projetos</a>
+        <a href="#matheus">Matheus</a>
+        <a href="#rafael">Rafael</a>
+        <a href="#andre">André</a>
         <a href="#como">Como adicionar</a>
       </nav>
     </header>
@@ -240,11 +279,13 @@
         </div>
       </section>
 
-      <section id="projetos" aria-labelledby="h-projetos">
-        <h2 id="h-projetos">Projetos</h2>
-        <p class="lead">Tudo o que já saiu da nossa oficina. Clique para abrir.</p>
-        <div class="grid" id="grid"></div>
+      <section id="os3" aria-labelledby="h-os3">
+        <h2 id="h-os3">Os 3</h2>
+        <p class="lead">Cada um tem o seu cantinho no site. Clique para ver os projetos.</p>
+        <div class="pessoas" id="pessoas"></div>
       </section>
+
+      <div id="secoes"></div>
 
       <section id="como" aria-labelledby="h-como">
         <h2 id="h-como">Como colocar um projeto novo aqui</h2>
@@ -256,7 +297,7 @@
           </article>
           <article class="passo">
             <h3>Anote na lista</h3>
-            <p>Abra o arquivo <code>projetos.js</code>, copie um bloco <code>{ ... }</code> e troque nome, descrição, emoji e link (<code>foguete/</code>).</p>
+            <p>Abra o arquivo <code>projetos.js</code>, copie um bloco <code>{ ... }</code> e troque nome, descrição, emoji, link (<code>foguete/</code>) e <code>quem</code> fez.</p>
           </article>
           <article class="passo">
             <h3>Publique</h3>
@@ -285,9 +326,11 @@
   <script src="projetos.js"></script>
   <script>
     (function () {
-      var grid = document.getElementById('grid');
-      var lista = (typeof PROJETOS !== 'undefined' && Array.isArray(PROJETOS)) ? PROJETOS : [];
+      var pessoas = (typeof PESSOAS !== 'undefined' && Array.isArray(PESSOAS)) ? PESSOAS : [];
+      var projetos = (typeof PROJETOS !== 'undefined' && Array.isArray(PROJETOS)) ? PROJETOS : [];
       var cores = ['coral', 'sol', 'mar'];
+      var elPessoas = document.getElementById('pessoas');
+      var elSecoes = document.getElementById('secoes');
 
       function el(tag, cls, texto) {
         var e = document.createElement(tag);
@@ -295,39 +338,78 @@
         if (texto != null) e.textContent = texto;
         return e;
       }
+      function corValida(c, padrao) { return cores.indexOf(c) >= 0 ? c : padrao; }
+      function quemFez(p) { return String(p.quem || '').trim().toLowerCase(); }
+      function doId(id) { return function (p) { return quemFez(p) === id; }; }
 
-      if (!lista.length) {
-        grid.appendChild(el('p', 'vazio', 'Ainda não tem nenhum projeto por aqui. O primeiro está chegando!'));
-      }
-
-      lista.forEach(function (p, i) {
-        var cor = cores.indexOf(p.cor) >= 0 ? p.cor : cores[i % cores.length];
-        var a = el('a', 'card ' + cor);
+      function cardProjeto(p, corPadrao) {
+        var a = el('a', 'card ' + corValida(p.cor, corPadrao));
         a.href = p.link || '#';
         if (/^https?:\/\//.test(a.href)) { a.target = '_blank'; a.rel = 'noopener'; }
-
         a.appendChild(el('span', 'ico', p.emoji || '★'));
         a.appendChild(el('h3', null, p.nome || 'Sem nome'));
         a.appendChild(el('p', null, p.descricao || ''));
-
-        var meta = el('div', 'meta');
-        if (p.quem) meta.appendChild(el('span', null, 'por ' + p.quem));
-        if (p.quando) meta.appendChild(el('span', null, p.quando));
-        if (meta.childNodes.length) a.appendChild(meta);
-
+        if (p.quando) {
+          var meta = el('div', 'meta');
+          meta.appendChild(el('span', null, p.quando));
+          a.appendChild(meta);
+        }
         var go = el('span', 'go', '→');
         go.setAttribute('aria-hidden', 'true');
         a.appendChild(go);
+        return a;
+      }
 
-        grid.appendChild(a);
+      function cardVazio(texto) {
+        var a = el('a', 'card novo');
+        a.href = '#como';
+        a.appendChild(el('span', 'ico', '+'));
+        a.appendChild(el('h3', null, texto));
+        a.appendChild(el('p', null, 'Esse espaço é seu. Veja como colocar aqui.'));
+        return a;
+      }
+
+      function secao(id, cor, letra, titulo, papel, lista, textoVazio) {
+        var sec = el('section', 'secao ' + cor);
+        sec.id = id;
+        sec.setAttribute('aria-labelledby', 'h-' + id);
+        var head = el('div', 'secao-head');
+        head.appendChild(el('span', 'av', letra));
+        var tit = el('div');
+        tit.appendChild(el('h2', null, titulo)).id = 'h-' + id;
+        if (papel) tit.appendChild(el('div', 'papel', papel));
+        head.appendChild(tit);
+        sec.appendChild(head);
+        var grid = el('div', 'grid');
+        lista.forEach(function (p) { grid.appendChild(cardProjeto(p, cor)); });
+        if (!lista.length) grid.appendChild(cardVazio(textoVazio));
+        sec.appendChild(grid);
+        elSecoes.appendChild(sec);
+      }
+
+      pessoas.forEach(function (ps, i) {
+        var cor = corValida(ps.cor, cores[i % cores.length]);
+        var letra = (ps.nome || '?').charAt(0).toUpperCase();
+        var meus = projetos.filter(doId(ps.id));
+
+        var a = el('a', 'pessoa ' + cor);
+        a.href = '#' + ps.id;
+        a.appendChild(el('span', 'av', letra));
+        a.appendChild(el('h3', null, ps.nome || ps.id));
+        if (ps.papel) a.appendChild(el('span', 'papel', ps.papel));
+        if (ps.frase) a.appendChild(el('p', 'frase', ps.frase));
+        a.appendChild(el('span', 'qtd', meus.length === 1 ? '1 projeto' : meus.length + ' projetos'));
+        elPessoas.appendChild(a);
+
+        secao(ps.id, cor, letra, ps.nome || ps.id, ps.papel || '', meus,
+              'Primeiro projeto de ' + (ps.nome || ps.id));
       });
 
-      var novo = el('a', 'card novo');
-      novo.href = '#como';
-      novo.appendChild(el('span', 'ico', '+'));
-      novo.appendChild(el('h3', null, 'Próximo projeto'));
-      novo.appendChild(el('p', null, 'Esse espaço é seu. Veja como colocar aqui.'));
-      grid.appendChild(novo);
+      var ids = pessoas.map(function (ps) { return ps.id; });
+      var emFamilia = projetos.filter(function (p) { return ids.indexOf(quemFez(p)) < 0; });
+      if (emFamilia.length) {
+        secao('todos', 'coral', '3', 'Feito pelos 3', 'projetos em família', emFamilia, '');
+      }
     })();
   </script>
 </body>
