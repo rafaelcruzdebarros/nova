@@ -45,6 +45,40 @@ const PROJETOS = [
     quando: "2026"
   },
 
+  // Desafios de lógica do Matheus (matheus/desafios/). Cada link abre um desafio direto.
+  {
+    nome: "Travessia do rio",
+    descricao: "Leve o lobo, a ovelha e o capim para a outra margem sem ninguém ser comido.",
+    emoji: "🛶",
+    link: "matheus/desafios/#rio",
+    quem: "matheus",
+    quando: "10/2026"
+  },
+  {
+    nome: "Sudoku",
+    descricao: "Grades de 4×4, 6×6 e 9×9, sempre novas, com dica e conferência.",
+    emoji: "🔢",
+    link: "matheus/desafios/#sudoku",
+    quem: "matheus",
+    quando: "10/2026"
+  },
+  {
+    nome: "Torre de Hanói",
+    descricao: "Mova a torre inteira, um disco por vez, sem pôr um maior sobre um menor.",
+    emoji: "🗼",
+    link: "matheus/desafios/#hanoi",
+    quem: "matheus",
+    quando: "10/2026"
+  },
+  {
+    nome: "Charadas de lógica",
+    descricao: "Dezesseis perguntas que enganam quem responde rápido demais.",
+    emoji: "💡",
+    link: "matheus/desafios/#charadas",
+    quem: "matheus",
+    quando: "10/2026"
+  },
+
   // Jogos do Arcade do André (andre/arcade/). Cada link abre um jogo direto.
   {
     nome: "Tênis",
