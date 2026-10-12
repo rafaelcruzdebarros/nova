@@ -56,7 +56,7 @@ const PROJETOS = [
   },
   {
     nome: "Jogo da Velha",
-    descricao: "Você com o X, a CPU com o O.",
+    descricao: "Contra a CPU ou duas pessoas no mesmo aparelho.",
     emoji: "❌",
     link: "andre/arcade/#s-velha",
     quem: "andre",
