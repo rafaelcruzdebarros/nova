@@ -14,6 +14,7 @@ O GitHub Pages publica a raiz deste repositório. Cada pasta vira um endereço:
 | `projetos.js` | as 3 pessoas e a lista dos projetos que aparecem na home |
 | `pecas/` | `3dbarros.com.br/pecas/`, a galeria das peças impressas em 3D |
 | `pecas/pecas.js` | lista das peças; as fotos ficam em `pecas/fotos/` |
+| `matheus/desafios/` | os Desafios de Lógica do Matheus: travessia do rio, Sudoku, Torre de Hanói e charadas |
 | `andre/arcade/` | o Arcade do André, com os jogos dele (cópia de andrecruzdebarros/jogos) |
 | `site.css` | o visual do site (home, galeria e 404) |
 | `404.html` | página de endereço errado; volta para a home |

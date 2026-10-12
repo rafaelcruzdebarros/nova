@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Desafios de Lógica · 3D Barros</title>
+  <meta name="description" content="Desafios de lógica para crianças: travessia do rio, Sudoku, Torre de Hanói e charadas.">
+  <meta name="theme-color" content="#0f1419">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230f1419'/%3E%3Ctext x='32' y='45' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='34' text-anchor='middle' fill='%23ff7a2f'%3E3D%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../site.css">
+  <style>
+    :root { --c: var(--coral); --ok: #7ad96a; --erro: #ff5d5d; }
+    body { min-height: 100dvh; }
+    .wrap { width: min(760px, 100% - 32px); }
+    .top nav a.quem { color: var(--c); }
+    h2 { font-size: clamp(28px, 5vw, 40px); margin: 0; }
+    h2::after { content: ""; display: block; width: 56px; height: 4px; background: var(--c); margin-top: 10px; }
+    .lead { color: var(--muted); margin: 10px 0 22px; max-width: 60ch; }
+    .scr { display: none; padding: 10px 0 48px; }
+    .scr.on { display: block; }
+    .back { display: inline-block; background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 12px; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; margin-bottom: 18px; }
+    .back:hover { color: var(--ink); border-color: var(--ink); }
+    button { font: inherit; }
+    .btn { cursor: pointer; }
+    .btn.c { background: var(--c); border-color: var(--c); color: var(--plate); }
+    .btn.c:hover { filter: brightness(1.1); background: var(--c); }
+    .btn[disabled] { opacity: .45; cursor: default; }
+    .linha { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
+    .seg { display: flex; gap: 6px; flex-wrap: wrap; }
+    .seg button { background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .seg button:hover { color: var(--ink); border-color: var(--ink); }
+    .seg button.on { background: var(--c); border-color: var(--c); color: var(--plate); }
+    .status { font-family: "Chakra Petch", sans-serif; font-size: 18px; min-height: 1.5em; margin: 12px 0; }
+    .status.ok { color: var(--ok); }
+    .status.erro { color: var(--erro); }
+    .nota { color: var(--muted); font-size: 14px; }
+
+    /* menu */
+    .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .menu a { display: flex; flex-direction: column; gap: 4px; text-decoration: none; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: var(--radius); padding: 16px 14px 14px; }
+    .menu a:hover { border-color: var(--c); }
+    .menu i { font-style: normal; font-size: 26px; line-height: 1; margin-bottom: 8px; }
+    .menu b { font-family: "Chakra Petch", sans-serif; font-size: 18px; line-height: 1.1; }
+    .menu small { color: var(--muted); font-size: 13px; }
+
+    /* rio */
+    .rio { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: stretch; margin: 10px 0; }
+    .margem { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; min-height: 180px; display: flex; flex-direction: column; gap: 8px; }
+    .margem h3 { margin: 0 0 4px; font-size: 14px; color: var(--muted); font-weight: 700; }
+    .item { display: flex; align-items: center; gap: 10px; background: var(--plate); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; cursor: pointer; color: var(--ink); text-align: left; font-weight: 700; }
+    .item:hover { border-color: var(--c); }
+    .item[disabled] { cursor: default; opacity: .5; }
+    .item i { font-style: normal; font-size: 24px; }
+    .agua { background: linear-gradient(180deg, #123c4d, #0d2a36); border: 1px solid #1f5468; border-radius: var(--radius); width: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px; }
+    .barco { font-size: 40px; line-height: 1; transition: transform .5s ease; }
+    .barco span { display: block; font-size: 20px; min-height: 24px; text-align: center; }
+    .agua .nota { font-size: 12px; text-align: center; }
+    @media (max-width: 560px) { .rio { grid-template-columns: 1fr; } .agua { width: 100%; flex-direction: row; justify-content: space-around; } }
+
+    /* sudoku */
+    .tab { display: grid; gap: 2px; background: var(--line); border: 2px solid var(--line); width: min(100%, 440px); aspect-ratio: 1; margin: 10px 0; user-select: none; }
+    .cel { background: var(--surface); color: var(--ink); border: 0; font-family: "Chakra Petch", sans-serif; font-weight: 700; font-size: clamp(16px, 4vw, 26px); cursor: pointer; display: grid; place-items: center; padding: 0; min-width: 0; }
+    .cel.fixa { color: var(--muted); background: #12181f; cursor: default; }
+    .cel.sel { outline: 2px solid var(--c); outline-offset: -2px; }
+    .cel.conflito { color: var(--erro); }
+    .cel.bl { border-left: 3px solid var(--ink); }
+    .cel.bt { border-top: 3px solid var(--ink); }
+    .pad { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+    .pad button { width: 44px; height: 44px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); font-family: "Chakra Petch", sans-serif; font-weight: 700; font-size: 18px; cursor: pointer; }
+    .pad button:hover { border-color: var(--c); }
+    .pad button.apagar { width: auto; padding: 0 14px; font-family: Manrope, sans-serif; font-size: 13px; }
+
+    /* hanói */
+    .torres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+    .torre { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); height: 220px; display: flex; flex-direction: column-reverse; align-items: center; justify-content: flex-start; gap: 4px; padding: 10px 6px; cursor: pointer; position: relative; }
+    .torre::before { content: ""; position: absolute; left: 50%; bottom: 10px; width: 6px; height: 170px; margin-left: -3px; background: var(--line); border-radius: 3px; }
+    .torre.sel { border-color: var(--c); }
+    .torre:hover { border-color: var(--c); }
+    .disco { position: relative; z-index: 1; height: 22px; border-radius: 4px; background: var(--c); }
+    .torre.sel .disco:last-child { transform: translateY(-10px); filter: brightness(1.2); }
+
+    /* charadas */
+    .charada { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin: 10px 0; }
+    .charada p.q { font-size: 18px; margin: 0 0 14px; }
+    .opcoes { display: grid; gap: 8px; }
+    .opcoes button { text-align: left; background: var(--plate); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; font-weight: 500; }
+    .opcoes button:hover { border-color: var(--c); }
+    .opcoes button.certa { border-color: var(--ok); color: var(--ok); }
+    .opcoes button.errada { border-color: var(--erro); color: var(--erro); }
+    .opcoes button[disabled] { cursor: default; }
+    .explica { margin: 12px 0 0; color: var(--muted); }
+    .placar { font-family: "Chakra Petch", sans-serif; color: var(--muted); font-size: 14px; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="mark" href="../../">3D Barros</a>
+      <nav aria-label="Navegação"><a class="quem" href="../../#matheus">Matheus</a></nav>
+    </header>
+
+    <main>
+      <section class="scr on" id="menu">
+        <h2>Desafios de Lógica</h2>
+        <p class="lead">Quatro desafios para pensar, para quem tem até uns 12 anos (ou mais). Escolha um.</p>
+        <div class="menu">
+          <a href="#rio"><i>🛶</i><b>Travessia do rio</b><small>Leve o lobo, a ovelha e o capim sem ninguém ser comido.</small></a>
+          <a href="#sudoku"><i>🔢</i><b>Sudoku</b><small>Grades de 4×4, 6×6 e 9×9, sempre novas.</small></a>
+          <a href="#hanoi"><i>🗼</i><b>Torre de Hanói</b><small>Mova a torre inteira, um disco por vez.</small></a>
+          <a href="#charadas"><i>💡</i><b>Charadas</b><small>Perguntas que enganam quem responde rápido demais.</small></a>
+        </div>
+      </section>
+
+      <!-- ===== Travessia do rio ===== -->
+      <section class="scr" id="rio" aria-labelledby="h-rio">
+        <a class="back" href="#menu">← Desafios</a>
+        <h2 id="h-rio">Travessia do rio</h2>
+        <p class="lead">O fazendeiro precisa levar o lobo, a ovelha e o capim para a outra margem. O barco só leva ele e mais um. Sozinhos, o lobo come a ovelha e a ovelha come o capim. Clique em quem vai no barco e depois em Atravessar.</p>
+        <div class="rio">
+          <div class="margem" id="margemE"><h3>Margem de cá</h3></div>
+          <div class="agua">
+            <div class="barco" id="barco">🛶<span id="noBarco"></span></div>
+            <button class="btn c" id="atravessar">Atravessar</button>
+            <span class="nota" id="viagens">0 viagens</span>
+          </div>
+          <div class="margem" id="margemD"><h3>Margem de lá</h3></div>
+        </div>
+        <div class="status" id="rioStatus"></div>
+        <div class="linha"><button class="btn ghost" id="rioReset">Recomeçar</button><button class="btn ghost" id="rioDica">Dica</button></div>
+        <p class="nota" id="rioDicaTxt"></p>
+      </section>
+
+      <!-- ===== Sudoku ===== -->
+      <section class="scr" id="sudoku" aria-labelledby="h-sudoku">
+        <a class="back" href="#menu">← Desafios</a>
+        <h2 id="h-sudoku">Sudoku</h2>
+        <p class="lead">Cada linha, cada coluna e cada bloco precisam ter todos os números, sem repetir. Toque numa casa e escolha o número.</p>
+        <div class="linha">
+          <div class="seg" id="sudTam"><button data-n="4" class="on">4×4</button><button data-n="6">6×6</button><button data-n="9">9×9</button></div>
+          <button class="btn ghost" id="sudNovo">Nova grade</button>
+        </div>
+        <div class="tab" id="tab" role="grid" aria-label="Grade do Sudoku"></div>
+        <div class="pad" id="pad"></div>
+        <div class="status" id="sudStatus"></div>
+        <div class="linha"><button class="btn ghost" id="sudDica">Dica: preencher uma casa</button><button class="btn ghost" id="sudConferir">Conferir</button></div>
+      </section>
+
+      <!-- ===== Torre de Hanói ===== -->
+      <section class="scr" id="hanoi" aria-labelledby="h-hanoi">
+        <a class="back" href="#menu">← Desafios</a>
+        <h2 id="h-hanoi">Torre de Hanói</h2>
+        <p class="lead">Leve todos os discos da primeira torre para a terceira. Só um disco por vez, e um disco maior nunca pode ficar em cima de um menor. Toque na torre de onde tirar e depois na torre de destino.</p>
+        <div class="linha">
+          <div class="seg" id="hanN"><button data-n="3" class="on">3 discos</button><button data-n="4">4</button><button data-n="5">5</button><button data-n="6">6</button></div>
+          <button class="btn ghost" id="hanReset">Recomeçar</button>
+        </div>
+        <div class="torres" id="torres"></div>
+        <div class="status" id="hanStatus"></div>
+        <p class="nota" id="hanNota"></p>
+      </section>
+
+      <!-- ===== Charadas ===== -->
+      <section class="scr" id="charadas" aria-labelledby="h-charadas">
+        <a class="back" href="#menu">← Desafios</a>
+        <h2 id="h-charadas">Charadas</h2>
+        <p class="lead">Leia com calma antes de responder. Quase todas têm uma pegadinha.</p>
+        <div class="placar" id="placar"></div>
+        <div class="charada" id="charada"></div>
+        <div class="linha"><button class="btn c" id="proxima">Próxima</button><button class="btn ghost" id="charReset">Recomeçar</button></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>3dbarros.com.br</span>
+      <span>desafios do Matheus</span>
+    </footer>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+
+    // ===== navegação por hash =====
+    const TELAS = ['menu', 'rio', 'sudoku', 'hanoi', 'charadas'];
+    function mostrar() {
+      const id = location.hash.slice(1);
+      const alvo = TELAS.includes(id) ? id : 'menu';
+      TELAS.forEach(t => $(t).classList.toggle('on', t === alvo));
+      window.scrollTo(0, 0);
+    }
+    addEventListener('hashchange', mostrar); mostrar();
+
+    // ===== Travessia do rio =====
+    (function () {
+      const ITENS = { lobo: ['🐺', 'Lobo'], ovelha: ['🐑', 'Ovelha'], capim: ['🌿', 'Capim'] };
+      let lado, fazendeiro, barco, viagens, fim;
+      const status = $('rioStatus');
+      function reset() {
+        lado = { lobo: 'E', ovelha: 'E', capim: 'E' }; fazendeiro = 'E'; barco = null; viagens = 0; fim = false;
+        status.textContent = ''; status.className = 'status'; $('rioDicaTxt').textContent = ''; draw();
+      }
+      function perigo(margem) {
+        const ali = Object.keys(ITENS).filter(k => lado[k] === margem);
+        if (ali.includes('lobo') && ali.includes('ovelha')) return 'O lobo ficou sozinho com a ovelha e comeu a ovelha!';
+        if (ali.includes('ovelha') && ali.includes('capim')) return 'A ovelha ficou sozinha com o capim e comeu tudo!';
+        return null;
+      }
+      function draw() {
+        for (const m of ['E', 'D']) {
+          const box = $('margem' + m);
+          box.innerHTML = ''; box.appendChild(el('h3', null, m === 'E' ? 'Margem de cá' : 'Margem de lá'));
+          if (fazendeiro === m) { const f = el('div', 'item', ''); f.appendChild(el('i', null, '🧑‍🌾')); f.appendChild(document.createTextNode('Fazendeiro')); f.style.cursor = 'default'; box.appendChild(f); }
+          for (const k of Object.keys(ITENS)) {
+            if (lado[k] !== m) continue;
+            const b = el('button', 'item'); b.appendChild(el('i', null, ITENS[k][0])); b.appendChild(document.createTextNode(ITENS[k][1]));
+            b.disabled = fim || fazendeiro !== m || (barco && barco !== k);
+            b.onclick = () => { barco = barco === k ? null : k; draw(); };
+            box.appendChild(b);
+          }
+        }
+        $('noBarco').textContent = barco ? ITENS[barco][0] : '';
+        $('barco').style.transform = fazendeiro === 'D' ? 'scaleX(-1)' : '';
+        $('viagens').textContent = viagens + (viagens === 1 ? ' viagem' : ' viagens');
+        $('atravessar').disabled = fim;
+      }
+      $('atravessar').onclick = () => {
+        if (fim) return;
+        const destino = fazendeiro === 'E' ? 'D' : 'E';
+        if (barco) lado[barco] = destino;
+        const origem = fazendeiro; fazendeiro = destino; barco = null; viagens++;
+        const p = perigo(origem);
+        if (p) { fim = true; status.textContent = p; status.className = 'status erro'; }
+        else if (Object.values(lado).every(v => v === 'D')) {
+          fim = true; status.className = 'status ok';
+          status.textContent = viagens === 7 ? 'Todos chegaram em ' + viagens + ' viagens. É o mínimo possível!' : 'Todos chegaram em ' + viagens + ' viagens. Dá para fazer em 7.';
+        } else { status.textContent = ''; status.className = 'status'; }
+        draw();
+      };
+      $('rioReset').onclick = reset;
+      $('rioDica').onclick = () => { $('rioDicaTxt').textContent = 'A ovelha é o problema: ela não pode ficar sozinha com ninguém. Comece levando a ovelha, e lembre que o barco pode trazer alguém de volta.'; };
+      reset();
+      window.__rio = { get: () => ({ lado, fazendeiro, viagens, fim }) };
+    })();
+
+    // ===== Sudoku =====
+    (function () {
+      let N = 4, BR = 2, BC = 2, sol = [], grade = [], fixa = [], sel = -1;
+      const tab = $('tab'), pad = $('pad'), status = $('sudStatus');
+      const caixas = { 4: [2, 2], 6: [2, 3], 9: [3, 3] };
+      function embaralha(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+      function ok(g, i, v) {
+        const r = Math.floor(i / N), c = i % N;
+        for (let k = 0; k < N; k++) { if (g[r * N + k] === v || g[k * N + c] === v) return false; }
+        const r0 = r - r % BR, c0 = c - c % BC;
+        for (let a = 0; a < BR; a++) for (let b = 0; b < BC; b++) if (g[(r0 + a) * N + c0 + b] === v) return false;
+        return true;
+      }
+      function preencher(g, i) {
+        if (i === N * N) return true;
+        if (g[i]) return preencher(g, i + 1);
+        for (const v of embaralha([...Array(N)].map((_, k) => k + 1))) { if (ok(g, i, v)) { g[i] = v; if (preencher(g, i + 1)) return true; g[i] = 0; } }
+        return false;
+      }
+      function contar(g, i, lim) {
+        while (i < N * N && g[i]) i++;
+        if (i === N * N) return 1;
+        let n = 0;
+        for (let v = 1; v <= N; v++) { if (ok(g, i, v)) { g[i] = v; n += contar(g, i + 1, lim); g[i] = 0; if (n >= lim) break; } }
+        return n;
+      }
+      function gerar() {
+        [BR, BC] = caixas[N];
+        sol = Array(N * N).fill(0); preencher(sol, 0);
+        grade = sol.slice();
+        const alvo = { 4: 10, 6: 22, 9: 50 }[N];
+        let tiradas = 0;
+        for (const i of embaralha([...Array(N * N).keys()])) {
+          if (tiradas >= alvo) break;
+          const v = grade[i]; grade[i] = 0;
+          if (contar(grade.slice(), 0, 2) !== 1) grade[i] = v; else tiradas++;
+        }
+        fixa = grade.map(v => v !== 0); sel = -1;
+        status.textContent = ''; status.className = 'status';
+        drawPad(); draw();
+      }
+      function conflitos() {
+        const bad = new Set();
+        for (let i = 0; i < N * N; i++) {
+          const v = grade[i]; if (!v) continue;
+          const r = Math.floor(i / N), c = i % N, r0 = r - r % BR, c0 = c - c % BC;
+          for (let k = 0; k < N; k++) { const a = r * N + k, b = k * N + c; if (a !== i && grade[a] === v) bad.add(i); if (b !== i && grade[b] === v) bad.add(i); }
+          for (let a = 0; a < BR; a++) for (let b = 0; b < BC; b++) { const j = (r0 + a) * N + c0 + b; if (j !== i && grade[j] === v) bad.add(i); }
+        }
+        return bad;
+      }
+      function draw() {
+        tab.innerHTML = ''; tab.style.gridTemplateColumns = 'repeat(' + N + ', 1fr)';
+        const bad = conflitos();
+        grade.forEach((v, i) => {
+          const b = el('button', 'cel', v || '');
+          const r = Math.floor(i / N), c = i % N;
+          if (fixa[i]) b.classList.add('fixa');
+          if (i === sel) b.classList.add('sel');
+          if (bad.has(i)) b.classList.add('conflito');
+          if (c % BC === 0 && c) b.classList.add('bl');
+          if (r % BR === 0 && r) b.classList.add('bt');
+          b.setAttribute('role', 'gridcell');
+          b.onclick = () => { if (fixa[i]) return; sel = i; draw(); };
+          tab.appendChild(b);
+        });
+        if (grade.every(Boolean) && bad.size === 0) { status.textContent = 'Sudoku completo. Parabéns!'; status.className = 'status ok'; }
+      }
+      function drawPad() {
+        pad.innerHTML = '';
+        for (let v = 1; v <= N; v++) { const b = el('button', null, v); b.onclick = () => poe(v); pad.appendChild(b); }
+        const ap = el('button', 'apagar', 'Apagar'); ap.onclick = () => poe(0); pad.appendChild(ap);
+      }
+      function poe(v) { if (sel < 0 || fixa[sel]) return; grade[sel] = v; status.textContent = ''; status.className = 'status'; draw(); }
+      addEventListener('keydown', e => {
+        if (!$('sudoku').classList.contains('on')) return;
+        const v = parseInt(e.key, 10);
+        if (v >= 1 && v <= N) poe(v); else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') poe(0);
+      });
+      $('sudTam').querySelectorAll('button').forEach(b => b.onclick = () => { $('sudTam').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); N = +b.dataset.n; gerar(); });
+      $('sudNovo').onclick = gerar;
+      $('sudDica').onclick = () => {
+        const vazias = [...grade.keys()].filter(i => !fixa[i] && grade[i] !== sol[i]);
+        if (!vazias.length) return;
+        const i = vazias[Math.floor(Math.random() * vazias.length)];
+        grade[i] = sol[i]; sel = i; draw();
+      };
+      $('sudConferir').onclick = () => {
+        const erradas = grade.filter((v, i) => v && v !== sol[i]).length, vazias = grade.filter(v => !v).length;
+        if (!erradas && !vazias) { status.textContent = 'Tudo certo. Parabéns!'; status.className = 'status ok'; }
+        else if (!erradas) { status.textContent = 'Até aqui está tudo certo. Faltam ' + vazias + ' casas.'; status.className = 'status'; }
+        else { status.textContent = erradas === 1 ? 'Há 1 número errado.' : 'Há ' + erradas + ' números errados.'; status.className = 'status erro'; }
+      };
+      gerar();
+      window.__sudoku = { get: () => ({ N, grade: grade.slice(), sol: sol.slice(), fixa: fixa.slice() }), unico: () => contar(grade.map((v, i) => fixa[i] ? v : 0), 0, 2) };
+    })();
+
+    // ===== Torre de Hanói =====
+    (function () {
+      let n = 3, torres, de = -1, moves, fim;
+      const status = $('hanStatus');
+      function reset() { torres = [[...Array(n).keys()].map(i => n - i), [], []]; de = -1; moves = 0; fim = false; status.textContent = ''; status.className = 'status'; draw(); }
+      function draw() {
+        const box = $('torres'); box.innerHTML = '';
+        torres.forEach((t, ti) => {
+          const d = el('div', 'torre' + (ti === de ? ' sel' : ''));
+          d.setAttribute('role', 'button'); d.setAttribute('aria-label', 'Torre ' + (ti + 1));
+          t.forEach(tam => { const disco = el('div', 'disco'); disco.style.width = (30 + tam * (60 / n)) + '%'; disco.style.filter = 'brightness(' + (0.7 + tam * 0.08) + ')'; d.appendChild(disco); });
+          d.onclick = () => clique(ti);
+          box.appendChild(d);
+        });
+        const min = Math.pow(2, n) - 1;
+        $('hanNota').textContent = moves + (moves === 1 ? ' movimento' : ' movimentos') + '. O mínimo com ' + n + ' discos é ' + min + '.';
+      }
+      function clique(ti) {
+        if (fim) return;
+        if (de < 0) { if (torres[ti].length) { de = ti; status.textContent = ''; status.className = 'status'; } draw(); return; }
+        if (ti === de) { de = -1; draw(); return; }
+        const disco = torres[de][torres[de].length - 1], topo = torres[ti][torres[ti].length - 1];
+        if (topo !== undefined && topo < disco) { status.textContent = 'Um disco maior não pode ficar em cima de um menor.'; status.className = 'status erro'; de = -1; draw(); return; }
+        torres[de].pop(); torres[ti].push(disco); moves++; de = -1;
+        if (torres[2].length === n) { fim = true; const min = Math.pow(2, n) - 1; status.className = 'status ok'; status.textContent = moves === min ? 'Torre completa em ' + moves + ' movimentos. Perfeito!' : 'Torre completa em ' + moves + ' movimentos. Dá para fazer em ' + min + '.'; }
+        draw();
+      }
+      $('hanN').querySelectorAll('button').forEach(b => b.onclick = () => { $('hanN').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); n = +b.dataset.n; reset(); });
+      $('hanReset').onclick = reset;
+      reset();
+      window.__hanoi = { get: () => ({ torres: torres.map(t => t.slice()), moves, fim }), clique };
+    })();
+
+    // ===== Charadas =====
+    (function () {
+      const C = [
+        { q: 'O pai de Maria tem quatro filhas: Lala, Lele, Lili e... qual é o nome da quarta?', o: ['Lolo', 'Lulu', 'Maria'], r: 2, e: 'A charada começa com "o pai de Maria". Maria é a quarta filha.' },
+        { q: 'Quantos meses do ano têm 28 dias?', o: ['Só um', 'Dois', 'Todos'], r: 2, e: 'Todos os meses têm pelo menos 28 dias. Fevereiro é só o que tem exatamente 28.' },
+        { q: 'Um fazendeiro tem 17 ovelhas. Todas, menos 9, fugiram. Quantas sobraram?', o: ['8', '9', '17'], r: 1, e: '"Todas menos 9 fugiram" quer dizer que 9 ficaram.' },
+        { q: 'O que pesa mais: 1 quilo de algodão ou 1 quilo de ferro?', o: ['O algodão', 'O ferro', 'Pesam o mesmo'], r: 2, e: 'Um quilo é um quilo. O ferro só ocupa menos espaço.' },
+        { q: 'Numa corrida, você ultrapassa quem está em segundo lugar. Em que lugar você fica?', o: ['Primeiro', 'Segundo', 'Terceiro'], r: 1, e: 'Quem passa o segundo colocado pega o lugar dele: fica em segundo.' },
+        { q: 'O médico dá três comprimidos e manda tomar um a cada meia hora. Em quanto tempo acabam?', o: ['Meia hora', 'Uma hora', 'Uma hora e meia'], r: 1, e: 'Um agora, outro daqui a meia hora e o último daqui a uma hora. Uma hora no total.' },
+        { q: 'O que sobe e desce o dia inteiro sem sair do lugar?', o: ['O elevador', 'A escada', 'O sol'], r: 1, e: 'A escada sobe e desce, mas quem se mexe é a gente.' },
+        { q: 'Quantos animais de cada espécie Moisés levou na arca?', o: ['Dois', 'Sete', 'Nenhum'], r: 2, e: 'Quem levou os animais na arca foi Noé, não Moisés.' },
+        { q: 'Antes de o Monte Everest ser descoberto, qual era a montanha mais alta do mundo?', o: ['O Aconcágua', 'O Everest', 'Nenhuma'], r: 1, e: 'O Everest já era o mais alto antes de alguém descobrir. Descobrir não muda o tamanho da montanha.' },
+        { q: 'Ana, Bia e Carla têm um animal cada: um gato, um cachorro e um peixe. Ana não gosta de pelo. Bia tem medo de cachorro. Quem tem o cachorro?', o: ['Ana', 'Bia', 'Carla'], r: 2, e: 'Ana não quer pelo, então fica com o peixe. Bia tem medo de cachorro, então fica com o gato. Sobra o cachorro para a Carla.' },
+        { q: 'Qual é o próximo número: 1, 1, 2, 3, 5, 8, ...?', o: ['11', '12', '13'], r: 2, e: 'Cada número é a soma dos dois anteriores: 5 + 8 = 13.' },
+        { q: 'Tenho dentes, mas não mordo. O que sou?', o: ['Um pente', 'Um jacaré', 'Uma serra'], r: 0, e: 'O pente tem dentes e não morde ninguém.' },
+        { q: 'Duas mães e duas filhas foram à padaria e compraram 3 pães, um para cada uma. Como?', o: ['Alguém ficou sem pão', 'Eram avó, mãe e filha', 'Um pão era grande'], r: 1, e: 'A avó é mãe da mãe, e a mãe é mãe da filha: duas mães e duas filhas em três pessoas.' },
+        { q: 'Quanto dá a metade de dois, mais dois?', o: ['Dois', 'Três', 'Quatro'], r: 1, e: 'A metade de dois é um. Um mais dois são três.' },
+        { q: 'Um tijolo pesa 1 quilo mais meio tijolo. Quanto pesa o tijolo?', o: ['1 quilo', '1 quilo e meio', '2 quilos'], r: 2, e: 'Se um tijolo é 1 quilo mais meio tijolo, então o meio tijolo que falta pesa 1 quilo. O tijolo inteiro pesa 2.' },
+        { q: 'Numa sala há 3 lâmpadas apagadas e, do lado de fora, 3 interruptores. Você pode mexer nos interruptores à vontade, mas só pode entrar na sala uma vez. Como descobrir qual interruptor acende cada lâmpada?', o: ['Não dá para descobrir', 'Ligar um, esperar, desligar, ligar outro e entrar', 'Ligar os três e entrar'], r: 1, e: 'Ligue o primeiro por alguns minutos e desligue. Ligue o segundo e entre: a lâmpada acesa é do segundo, a quente e apagada é do primeiro, e a fria é do terceiro.' },
+      ];
+      let ordem, i, acertos, respondida;
+      function reset() { ordem = C.map((_, k) => k).sort(() => Math.random() - .5); i = 0; acertos = 0; draw(); }
+      function draw() {
+        const box = $('charada'); box.innerHTML = ''; respondida = false;
+        if (i >= ordem.length) {
+          box.appendChild(el('p', 'q', 'Fim! Você acertou ' + acertos + ' de ' + ordem.length + '.'));
+          box.appendChild(el('p', 'explica', acertos === ordem.length ? 'Todas certas. Ninguém te engana.' : 'Toque em Recomeçar para tentar de novo, em outra ordem.'));
+          $('placar').textContent = ''; $('proxima').disabled = true; return;
+        }
+        const c = C[ordem[i]];
+        $('placar').textContent = 'Charada ' + (i + 1) + ' de ' + ordem.length + ' · ' + acertos + (acertos === 1 ? ' acerto' : ' acertos');
+        box.appendChild(el('p', 'q', c.q));
+        const ops = el('div', 'opcoes');
+        c.o.forEach((t, k) => {
+          const b = el('button', null, t);
+          b.onclick = () => {
+            if (respondida) return; respondida = true;
+            if (k === c.r) acertos++;
+            ops.querySelectorAll('button').forEach((x, j) => { x.disabled = true; if (j === c.r) x.classList.add('certa'); else if (j === k) x.classList.add('errada'); });
+            box.appendChild(el('p', 'explica', (k === c.r ? 'Certo. ' : 'Não é essa. ') + c.e));
+            $('placar').textContent = 'Charada ' + (i + 1) + ' de ' + ordem.length + ' · ' + acertos + (acertos === 1 ? ' acerto' : ' acertos');
+          };
+          ops.appendChild(b);
+        });
+        box.appendChild(ops);
+        $('proxima').disabled = false;
+      }
+      $('proxima').onclick = () => { i++; draw(); };
+      $('charReset').onclick = reset;
+      reset();
+      window.__charadas = { get: () => ({ i, acertos, total: C.length }) };
+    })();
+  })();
+  </script>
+</body>
+</html>
