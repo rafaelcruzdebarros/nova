@@ -107,6 +107,14 @@
     .agua2 { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, #4fb3d9, #2a7fa8); transition: height .3s ease; }
     .vidro span { position: absolute; left: 0; right: 0; top: 8px; text-align: center; font-family: "Chakra Petch", sans-serif; font-weight: 700; font-size: 20px; }
     .jarro b { font-size: 13px; color: var(--muted); }
+    /* resta 1 */
+    .tab33 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; width: min(100%, 420px); margin: 14px 0; }
+    .furo { aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); padding: 0; cursor: pointer; display: grid; place-items: center; }
+    .furo.fora { visibility: hidden; }
+    .furo .peca { width: 68%; height: 68%; border-radius: 50%; background: var(--c); box-shadow: inset -4px -4px 0 rgba(0, 0, 0, .25); }
+    .furo.sel { border-color: var(--c); box-shadow: 0 0 0 2px var(--c); }
+    .furo.alvo { border-color: var(--ok); background: #16271c; }
+    .furo.alvo::after { content: ""; width: 24%; height: 24%; border-radius: 50%; background: var(--ok); }
     .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   </style>
 </head>
@@ -126,7 +134,7 @@
           <a href="#sudoku"><i>🔢</i><b>Sudoku</b><small>Grades de 4×4, 6×6 e 9×9, sempre novas.</small></a>
           <a href="#hanoi"><i>🗼</i><b>Torre de Hanói</b><small>Mova a torre inteira, um disco por vez.</small></a>
           <a href="#charadas"><i>💡</i><b>Charadas</b><small>Perguntas que enganam quem responde rápido demais.</small></a>
-          <a href="#diversos"><i>🧩</i><b>Diversos</b><small>A ponte e a lanterna, as rãs saltadoras e os jarros de água.</small></a>
+          <a href="#diversos"><i>🧩</i><b>Diversos</b><small>A ponte e a lanterna, as rãs saltadoras, os jarros de água e o Resta 1.</small></a>
         </div>
       </section>
 
@@ -161,6 +169,7 @@
           <a href="#ponte"><i>🔦</i><b>A ponte e a lanterna</b><small>Quatro pessoas, uma lanterna, e o tempo correndo.</small></a>
           <a href="#ras"><i>🐸</i><b>Rãs saltadoras</b><small>Troque as rãs de lado pulando uma por cima da outra.</small></a>
           <a href="#jarros"><i>🫗</i><b>Jarros de água</b><small>Meça a quantidade certa só com dois jarros.</small></a>
+          <a href="#resta1"><i>⚪</i><b>Resta 1</b><small>Pule uma peça por cima da outra até sobrar uma só.</small></a>
         </div>
       </section>
 
@@ -207,6 +216,20 @@
         <div class="status" id="jarStatus"></div>
         <div class="linha"><button class="btn ghost" id="jarReset">Recomeçar</button><button class="btn ghost" id="jarDica">Dica</button></div>
         <p class="nota" id="jarNota"></p>
+      </section>
+
+      <!-- ===== Resta 1 ===== -->
+      <section class="scr" id="resta1" aria-labelledby="h-resta">
+        <a class="back" href="#diversos">← Diversos</a>
+        <h2 id="h-resta">Resta 1</h2>
+        <p class="lead">Uma peça pula por cima de outra vizinha, em linha reta, para uma casa vazia logo depois, e a peça pulada sai do tabuleiro. O objetivo é sobrar uma só. Toque na peça que vai pular e depois na casa de destino.</p>
+        <div class="linha">
+          <div class="seg" id="restaNivel"><button data-n="0" class="on">Cruz · 6</button><button data-n="1">Lareira · 8</button><button data-n="2">Pirâmide · 15</button><button data-n="3">Tabuleiro cheio · 32</button></div>
+        </div>
+        <div class="tab33" id="tab33" role="grid" aria-label="Tabuleiro do Resta 1"></div>
+        <div class="status" id="restaStatus"></div>
+        <div class="linha"><button class="btn ghost" id="restaReset">Recomeçar</button><button class="btn ghost" id="restaDesfazer">Desfazer</button></div>
+        <p class="nota" id="restaNota"></p>
       </section>
 
       <!-- ===== Sudoku ===== -->
@@ -262,7 +285,7 @@
     const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
     // ===== navegação por hash =====
-    const TELAS = ['menu', 'rio', 'sudoku', 'hanoi', 'charadas', 'diversos', 'ponte', 'ras', 'jarros'];
+    const TELAS = ['menu', 'rio', 'sudoku', 'hanoi', 'charadas', 'diversos', 'ponte', 'ras', 'jarros', 'resta1'];
     function mostrar() {
       const id = location.hash.slice(1);
       const alvo = TELAS.includes(id) ? id : 'menu';
@@ -498,6 +521,67 @@
       };
       reset();
       window.__jarros = { get: () => ({ a, b, passos, fim, min }), set: (x, y) => { a = x; b = y; passos++; conferir(); draw(); } };
+    })();
+
+    // ===== Resta 1 =====
+    (function () {
+      // Tabuleiro inglês: 7×7 com os cantos de fora (33 casas). 1 = casa válida.
+      const MASK = [0,0,1,1,1,0,0, 0,0,1,1,1,0,0, 1,1,1,1,1,1,1, 1,1,1,1,1,1,1, 1,1,1,1,1,1,1, 0,0,1,1,1,0,0, 0,0,1,1,1,0,0];
+      const NIVEIS = [
+        { nome: 'Cruz', pecas: [[1,3],[2,2],[2,3],[2,4],[3,3],[4,3]] },
+        { nome: 'Lareira', pecas: [[1,2],[1,3],[1,4],[2,2],[2,3],[2,4],[3,2],[3,4]] },
+        { nome: 'Pirâmide', pecas: [[1,3],[2,2],[2,3],[2,4],[3,1],[3,2],[3,3],[3,4],[3,5],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5]] },
+        { nome: 'Cheio', pecas: null }
+      ];
+      let nv = 0, tab, sel, hist;
+      const status = $('restaStatus');
+      const idx = (r, c) => r * 7 + c;
+      function reset() {
+        tab = MASK.map(v => v ? 0 : -1);
+        const N = NIVEIS[nv];
+        if (N.pecas) N.pecas.forEach(([r, c]) => tab[idx(r, c)] = 1);
+        else { tab = tab.map(v => v === 0 ? 1 : v); tab[idx(3, 3)] = 0; }
+        sel = -1; hist = []; status.textContent = ''; status.className = 'status'; draw();
+      }
+      function saltos(i) {
+        const r = Math.floor(i / 7), c = i % 7, out = [];
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          const r1 = r + dr, c1 = c + dc, r2 = r + 2 * dr, c2 = c + 2 * dc;
+          if (r2 < 0 || r2 > 6 || c2 < 0 || c2 > 6) continue;
+          if (tab[idx(r1, c1)] === 1 && tab[idx(r2, c2)] === 0) out.push({ meio: idx(r1, c1), fim: idx(r2, c2) });
+        }
+        return out;
+      }
+      function haMovimento() { return tab.some((v, i) => v === 1 && saltos(i).length); }
+      function draw() {
+        const box = $('tab33'); box.innerHTML = '';
+        const alvos = sel >= 0 ? saltos(sel).map(s => s.fim) : [];
+        tab.forEach((v, i) => {
+          const b = el('button', 'furo' + (v < 0 ? ' fora' : '') + (i === sel ? ' sel' : '') + (alvos.includes(i) ? ' alvo' : ''));
+          if (v < 0) { b.disabled = true; b.tabIndex = -1; }
+          if (v === 1) b.appendChild(el('span', 'peca'));
+          b.setAttribute('aria-label', v === 1 ? 'Peça' : 'Casa vazia');
+          b.onclick = () => clique(i);
+          box.appendChild(b);
+        });
+        const n = tab.filter(v => v === 1).length;
+        $('restaNota').textContent = n + (n === 1 ? ' peça' : ' peças') + ' no tabuleiro. ' + hist.length + (hist.length === 1 ? ' movimento.' : ' movimentos.');
+        if (n === 1) { status.className = 'status ok'; status.textContent = tab[idx(3, 3)] === 1 ? 'Restou uma, e bem no centro. Perfeito!' : 'Restou uma. Parabéns!'; }
+        else if (!haMovimento()) { status.className = 'status erro'; status.textContent = 'Acabaram os pulos e restaram ' + n + ' peças. Desfaça ou recomece.'; }
+      }
+      function clique(i) {
+        if (tab[i] < 0) return;
+        if (tab[i] === 1) { sel = sel === i ? -1 : i; status.textContent = ''; status.className = 'status'; draw(); return; }
+        if (sel < 0) return;
+        const s = saltos(sel).find(x => x.fim === i);
+        if (!s) { status.textContent = 'Esse pulo não vale: precisa passar por cima de uma peça vizinha, em linha reta, para uma casa vazia.'; status.className = 'status erro'; return; }
+        hist.push(tab.slice()); tab[sel] = 0; tab[s.meio] = 0; tab[i] = 1; sel = -1; status.textContent = ''; status.className = 'status'; draw();
+      }
+      $('restaNivel').querySelectorAll('button').forEach(b => b.onclick = () => { nv = +b.dataset.n; $('restaNivel').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); reset(); });
+      $('restaReset').onclick = reset;
+      $('restaDesfazer').onclick = () => { if (hist.length) { tab = hist.pop(); sel = -1; status.textContent = ''; status.className = 'status'; draw(); } };
+      reset();
+      window.__resta = { get: () => ({ nv, tab: tab.slice(), moves: hist.length }), nivel: n => { nv = n; $('restaNivel').querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.n === n)); reset(); }, clique };
     })();
 
     // ===== Sudoku =====

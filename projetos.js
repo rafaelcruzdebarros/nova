@@ -72,7 +72,7 @@ const PROJETOS = [
   },
   {
     nome: "Diversos",
-    descricao: "A ponte e a lanterna, as rãs saltadoras e os jarros de água. Ainda sem categoria.",
+    descricao: "A ponte e a lanterna, as rãs saltadoras, os jarros de água e o Resta 1. Ainda sem categoria.",
     emoji: "🧩",
     link: "matheus/desafios/#diversos",
     quem: "matheus",
