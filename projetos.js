@@ -47,8 +47,8 @@ const PROJETOS = [
 
   // Desafios de lógica do Matheus (matheus/desafios/). Cada link abre um desafio direto.
   {
-    nome: "Travessia do rio",
-    descricao: "Leve o lobo, a ovelha e o capim para a outra margem sem ninguém ser comido.",
+    nome: "Travessias",
+    descricao: "Três níveis: o fazendeiro com o lobo, a ovelha e o capim; a família no barco; e os lobos com as ovelhas.",
     emoji: "🛶",
     link: "matheus/desafios/#rio",
     quem: "matheus",
@@ -67,6 +67,14 @@ const PROJETOS = [
     descricao: "Mova a torre inteira, um disco por vez, sem pôr um maior sobre um menor.",
     emoji: "🗼",
     link: "matheus/desafios/#hanoi",
+    quem: "matheus",
+    quando: "10/2026"
+  },
+  {
+    nome: "Diversos",
+    descricao: "A ponte e a lanterna, as rãs saltadoras e os jarros de água. Ainda sem categoria.",
+    emoji: "🧩",
+    link: "matheus/desafios/#diversos",
     quem: "matheus",
     quando: "10/2026"
   },

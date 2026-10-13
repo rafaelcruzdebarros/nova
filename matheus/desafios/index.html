@@ -93,6 +93,20 @@
     .opcoes button[disabled] { cursor: default; }
     .explica { margin: 12px 0 0; color: var(--muted); }
     .placar { font-family: "Chakra Petch", sans-serif; color: var(--muted); font-size: 14px; }
+    /* rãs */
+    .pedras { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 14px 0; }
+    .pedra { aspect-ratio: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; font-size: clamp(22px, 7vw, 40px); cursor: pointer; padding: 0; }
+    .pedra.v { filter: hue-rotate(0deg); }
+    .pedra.m { filter: sepia(1) saturate(2) hue-rotate(-20deg); }
+    .pedra:hover { border-color: var(--c); }
+    .pedra[disabled] { cursor: default; }
+    /* jarros */
+    .jarros { display: flex; gap: 24px; align-items: flex-end; margin: 14px 0; }
+    .jarro { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .vidro { width: 90px; border: 3px solid var(--ink); border-top: 0; border-radius: 0 0 12px 12px; background: var(--surface); position: relative; overflow: hidden; }
+    .agua2 { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, #4fb3d9, #2a7fa8); transition: height .3s ease; }
+    .vidro span { position: absolute; left: 0; right: 0; top: 8px; text-align: center; font-family: "Chakra Petch", sans-serif; font-weight: 700; font-size: 20px; }
+    .jarro b { font-size: 13px; color: var(--muted); }
     .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   </style>
 </head>
@@ -106,20 +120,24 @@
     <main>
       <section class="scr on" id="menu">
         <h2>Desafios de Lógica</h2>
-        <p class="lead">Quatro desafios para pensar, para quem tem até uns 12 anos (ou mais). Escolha um.</p>
+        <p class="lead">Desafios para pensar, para quem tem até uns 12 anos (ou mais). Escolha um.</p>
         <div class="menu">
-          <a href="#rio"><i>🛶</i><b>Travessia do rio</b><small>Leve o lobo, a ovelha e o capim sem ninguém ser comido.</small></a>
+          <a href="#rio"><i>🛶</i><b>Travessias</b><small>Três níveis: o fazendeiro, a família e os lobos com as ovelhas.</small></a>
           <a href="#sudoku"><i>🔢</i><b>Sudoku</b><small>Grades de 4×4, 6×6 e 9×9, sempre novas.</small></a>
           <a href="#hanoi"><i>🗼</i><b>Torre de Hanói</b><small>Mova a torre inteira, um disco por vez.</small></a>
           <a href="#charadas"><i>💡</i><b>Charadas</b><small>Perguntas que enganam quem responde rápido demais.</small></a>
+          <a href="#diversos"><i>🧩</i><b>Diversos</b><small>A ponte e a lanterna, as rãs saltadoras e os jarros de água.</small></a>
         </div>
       </section>
 
-      <!-- ===== Travessia do rio ===== -->
+      <!-- ===== Travessias ===== -->
       <section class="scr" id="rio" aria-labelledby="h-rio">
         <a class="back" href="#menu">← Desafios</a>
-        <h2 id="h-rio">Travessia do rio</h2>
-        <p class="lead">O fazendeiro precisa levar o lobo, a ovelha e o capim para a outra margem. O barco só leva ele e mais um. Sozinhos, o lobo come a ovelha e a ovelha come o capim. Clique em quem vai no barco e depois em Atravessar.</p>
+        <h2 id="h-rio">Travessias</h2>
+        <div class="linha">
+          <div class="seg" id="travNivel"><button data-n="0" class="on">1 · Fazendeiro</button><button data-n="1">2 · Família</button><button data-n="2">3 · Lobos e ovelhas</button></div>
+        </div>
+        <p class="lead" id="travRegras"></p>
         <div class="rio">
           <div class="margem" id="margemE"><h3>Margem de cá</h3></div>
           <div class="agua">
@@ -132,6 +150,63 @@
         <div class="status" id="rioStatus"></div>
         <div class="linha"><button class="btn ghost" id="rioReset">Recomeçar</button><button class="btn ghost" id="rioDica">Dica</button></div>
         <p class="nota" id="rioDicaTxt"></p>
+      </section>
+
+      <!-- ===== Diversos ===== -->
+      <section class="scr" id="diversos" aria-labelledby="h-div">
+        <a class="back" href="#menu">← Desafios</a>
+        <h2 id="h-div">Diversos</h2>
+        <p class="lead">Desafios ainda sem categoria. Cada um tem a sua tela.</p>
+        <div class="menu">
+          <a href="#ponte"><i>🔦</i><b>A ponte e a lanterna</b><small>Quatro pessoas, uma lanterna, e o tempo correndo.</small></a>
+          <a href="#ras"><i>🐸</i><b>Rãs saltadoras</b><small>Troque as rãs de lado pulando uma por cima da outra.</small></a>
+          <a href="#jarros"><i>🫗</i><b>Jarros de água</b><small>Meça a quantidade certa só com dois jarros.</small></a>
+        </div>
+      </section>
+
+      <!-- ===== Ponte e lanterna ===== -->
+      <section class="scr" id="ponte" aria-labelledby="h-ponte">
+        <a class="back" href="#diversos">← Diversos</a>
+        <h2 id="h-ponte">A ponte e a lanterna</h2>
+        <p class="lead">É noite, e quatro pessoas precisam cruzar uma ponte velha com uma lanterna só. A ponte aguenta no máximo duas por vez, e quem cruza precisa levar a lanterna. Cada pessoa leva um tempo diferente, e os dois juntos andam no ritmo do mais lento. Escolha quem cruza e toque em Atravessar.</p>
+        <div class="rio">
+          <div class="margem" id="ponteE"><h3>Lado de cá</h3></div>
+          <div class="agua">
+            <div class="barco" id="lanterna">🔦</div>
+            <button class="btn c" id="ponteIr">Atravessar</button>
+            <span class="nota" id="ponteTempo">0 min</span>
+          </div>
+          <div class="margem" id="ponteD"><h3>Lado de lá</h3></div>
+        </div>
+        <div class="status" id="ponteStatus"></div>
+        <div class="linha"><button class="btn ghost" id="ponteReset">Recomeçar</button><button class="btn ghost" id="ponteDica">Dica</button></div>
+        <p class="nota" id="ponteDicaTxt"></p>
+      </section>
+
+      <!-- ===== Rãs saltadoras ===== -->
+      <section class="scr" id="ras" aria-labelledby="h-ras">
+        <a class="back" href="#diversos">← Diversos</a>
+        <h2 id="h-ras">Rãs saltadoras</h2>
+        <p class="lead">Três rãs verdes de um lado, três marrons do outro, e uma pedra vazia no meio. Cada rã só anda para a frente: pode ir para a pedra vazia ao lado ou pular por cima de uma rã para a pedra vazia logo depois. Objetivo: trocar as rãs de lado. Toque na rã que vai se mover.</p>
+        <div class="pedras" id="pedras"></div>
+        <div class="status" id="rasStatus"></div>
+        <div class="linha"><button class="btn ghost" id="rasReset">Recomeçar</button><button class="btn ghost" id="rasDesfazer">Desfazer</button></div>
+        <p class="nota" id="rasNota"></p>
+      </section>
+
+      <!-- ===== Jarros ===== -->
+      <section class="scr" id="jarros" aria-labelledby="h-jarros">
+        <a class="back" href="#diversos">← Diversos</a>
+        <h2 id="h-jarros">Jarros de água</h2>
+        <div class="linha">
+          <div class="seg" id="jarNivel"><button data-n="0" class="on">5 e 3 litros</button><button data-n="1">7 e 5 litros</button></div>
+        </div>
+        <p class="lead" id="jarRegras"></p>
+        <div class="jarros" id="jarrosBox"></div>
+        <div class="linha" id="jarAcoes"></div>
+        <div class="status" id="jarStatus"></div>
+        <div class="linha"><button class="btn ghost" id="jarReset">Recomeçar</button><button class="btn ghost" id="jarDica">Dica</button></div>
+        <p class="nota" id="jarNota"></p>
       </section>
 
       <!-- ===== Sudoku ===== -->
@@ -187,7 +262,7 @@
     const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
     // ===== navegação por hash =====
-    const TELAS = ['menu', 'rio', 'sudoku', 'hanoi', 'charadas'];
+    const TELAS = ['menu', 'rio', 'sudoku', 'hanoi', 'charadas', 'diversos', 'ponte', 'ras', 'jarros'];
     function mostrar() {
       const id = location.hash.slice(1);
       const alvo = TELAS.includes(id) ? id : 'menu';
@@ -196,56 +271,233 @@
     }
     addEventListener('hashchange', mostrar); mostrar();
 
-    // ===== Travessia do rio =====
+    // ===== Travessias (3 níveis) =====
     (function () {
-      const ITENS = { lobo: ['🐺', 'Lobo'], ovelha: ['🐑', 'Ovelha'], capim: ['🌿', 'Capim'] };
-      let lado, fazendeiro, barco, viagens, fim;
+      // Cada nível: itens (id, emoji, nome, tipo), se há um barqueiro fixo, a regra de lotação do barco,
+      // a regra de perigo numa margem (recebe quem está nela e se o barco está lá) e a dica.
+      const NIVEIS = [
+        {
+          nome: 'Fazendeiro', barqueiro: '🧑‍🌾', min: 7,
+          regras: 'O fazendeiro precisa levar o lobo, a ovelha e o capim para a outra margem. O barco só leva ele e mais um. Sozinhos, o lobo come a ovelha e a ovelha come o capim. Toque em quem vai no barco e depois em Atravessar.',
+          itens: [['lobo', '🐺', 'Lobo', 'lobo'], ['ovelha', '🐑', 'Ovelha', 'ovelha'], ['capim', '🌿', 'Capim', 'capim']],
+          lotacao: sel => sel.length <= 1 ? null : 'O barco só leva o fazendeiro e mais um.',
+          perigo: (ali, barcoAqui) => {
+            if (barcoAqui) return null;
+            const t = ali.map(i => i.tipo);
+            if (t.includes('lobo') && t.includes('ovelha')) return 'O lobo ficou sozinho com a ovelha e comeu a ovelha!';
+            if (t.includes('ovelha') && t.includes('capim')) return 'A ovelha ficou sozinha com o capim e comeu tudo!';
+            return null;
+          },
+          dica: 'A ovelha é o problema: ela não pode ficar sozinha com ninguém. Comece levando a ovelha, e lembre que o barco pode trazer alguém de volta.'
+        },
+        {
+          nome: 'Família', barqueiro: null, min: 9,
+          regras: 'Pai, mãe e dois filhos precisam atravessar. O barco aguenta um adulto sozinho, ou uma criança, ou duas crianças. Ninguém pode ficar no barco sem remar: toda viagem leva pelo menos uma pessoa. Toque em quem vai e depois em Atravessar.',
+          itens: [['pai', '👨', 'Pai', 'adulto'], ['mae', '👩', 'Mãe', 'adulto'], ['f1', '🧒', 'Filho', 'crianca'], ['f2', '👧', 'Filha', 'crianca']],
+          lotacao: sel => {
+            const ad = sel.filter(i => i.tipo === 'adulto').length, cr = sel.length - ad;
+            if (ad > 1) return 'Só cabe um adulto no barco.';
+            if (ad === 1 && cr > 0) return 'Com um adulto não cabe mais ninguém.';
+            if (cr > 2) return 'Cabem no máximo duas crianças.';
+            return null;
+          },
+          perigo: () => null,
+          dica: 'Quem leva o barco de volta é sempre uma criança. Mande as duas crianças, traga uma, e aí um adulto atravessa sozinho.'
+        },
+        {
+          nome: 'Lobos e ovelhas', barqueiro: null, min: 11,
+          regras: 'Três lobos e três ovelhas precisam atravessar. O barco leva uma ou duas, e qualquer um sabe remar. Em qualquer margem, se os lobos ficarem em maior número que as ovelhas, eles atacam. Toque em quem vai e depois em Atravessar.',
+          itens: [['l1', '🐺', 'Lobo', 'lobo'], ['l2', '🐺', 'Lobo', 'lobo'], ['l3', '🐺', 'Lobo', 'lobo'], ['o1', '🐑', 'Ovelha', 'ovelha'], ['o2', '🐑', 'Ovelha', 'ovelha'], ['o3', '🐑', 'Ovelha', 'ovelha']],
+          lotacao: sel => sel.length <= 2 ? null : 'O barco leva no máximo dois.',
+          perigo: ali => {
+            const l = ali.filter(i => i.tipo === 'lobo').length, o = ali.filter(i => i.tipo === 'ovelha').length;
+            return (o > 0 && l > o) ? 'Os lobos ficaram em maior número que as ovelhas numa margem e atacaram!' : null;
+          },
+          dica: 'Comece levando dois lobos. A regra vale nas duas margens, então conte lobos e ovelhas dos dois lados antes de cada viagem.'
+        }
+      ];
+      let nv = 0, itens, lado, barcoLado, sel, viagens, fim;
       const status = $('rioStatus');
       function reset() {
-        lado = { lobo: 'E', ovelha: 'E', capim: 'E' }; fazendeiro = 'E'; barco = null; viagens = 0; fim = false;
+        const N = NIVEIS[nv];
+        itens = N.itens.map(([id, emoji, nome, tipo]) => ({ id, emoji, nome, tipo }));
+        lado = {}; itens.forEach(i => lado[i.id] = 'E'); barcoLado = 'E'; sel = []; viagens = 0; fim = false;
+        $('travRegras').textContent = N.regras;
+        $('travNivel').querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.n === nv));
         status.textContent = ''; status.className = 'status'; $('rioDicaTxt').textContent = ''; draw();
       }
-      function perigo(margem) {
-        const ali = Object.keys(ITENS).filter(k => lado[k] === margem);
-        if (ali.includes('lobo') && ali.includes('ovelha')) return 'O lobo ficou sozinho com a ovelha e comeu a ovelha!';
-        if (ali.includes('ovelha') && ali.includes('capim')) return 'A ovelha ficou sozinha com o capim e comeu tudo!';
-        return null;
-      }
+      function emMargem(m) { return itens.filter(i => lado[i.id] === m && !sel.includes(i)); }
       function draw() {
+        const N = NIVEIS[nv];
         for (const m of ['E', 'D']) {
-          const box = $('margem' + m);
-          box.innerHTML = ''; box.appendChild(el('h3', null, m === 'E' ? 'Margem de cá' : 'Margem de lá'));
-          if (fazendeiro === m) { const f = el('div', 'item', ''); f.appendChild(el('i', null, '🧑‍🌾')); f.appendChild(document.createTextNode('Fazendeiro')); f.style.cursor = 'default'; box.appendChild(f); }
-          for (const k of Object.keys(ITENS)) {
-            if (lado[k] !== m) continue;
-            const b = el('button', 'item'); b.appendChild(el('i', null, ITENS[k][0])); b.appendChild(document.createTextNode(ITENS[k][1]));
-            b.disabled = fim || fazendeiro !== m || (barco && barco !== k);
-            b.onclick = () => { barco = barco === k ? null : k; draw(); };
+          const box = $('margem' + m); box.innerHTML = ''; box.appendChild(el('h3', null, m === 'E' ? 'Margem de cá' : 'Margem de lá'));
+          if (N.barqueiro && barcoLado === m) { const f = el('div', 'item'); f.appendChild(el('i', null, N.barqueiro)); f.appendChild(document.createTextNode('Fazendeiro')); f.style.cursor = 'default'; box.appendChild(f); }
+          itens.filter(i => lado[i.id] === m).forEach(i => {
+            const b = el('button', 'item'); b.appendChild(el('i', null, i.emoji)); b.appendChild(document.createTextNode(i.nome + (sel.includes(i) ? ' (no barco)' : '')));
+            b.disabled = fim || barcoLado !== m;
+            if (sel.includes(i)) b.style.borderColor = 'var(--c)';
+            b.onclick = () => {
+              if (sel.includes(i)) { sel = sel.filter(x => x !== i); status.textContent = ''; status.className = 'status'; draw(); return; }
+              const erro = N.lotacao([...sel, i]);
+              if (erro) { status.textContent = erro; status.className = 'status erro'; return; }
+              sel.push(i); status.textContent = ''; status.className = 'status'; draw();
+            };
             box.appendChild(b);
-          }
+          });
         }
-        $('noBarco').textContent = barco ? ITENS[barco][0] : '';
-        $('barco').style.transform = fazendeiro === 'D' ? 'scaleX(-1)' : '';
+        $('noBarco').textContent = sel.map(i => i.emoji).join('');
+        $('barco').style.transform = barcoLado === 'D' ? 'scaleX(-1)' : '';
         $('viagens').textContent = viagens + (viagens === 1 ? ' viagem' : ' viagens');
         $('atravessar').disabled = fim;
       }
-      $('atravessar').onclick = () => {
+      function atravessar() {
         if (fim) return;
-        const destino = fazendeiro === 'E' ? 'D' : 'E';
-        if (barco) lado[barco] = destino;
-        const origem = fazendeiro; fazendeiro = destino; barco = null; viagens++;
-        const p = perigo(origem);
+        const N = NIVEIS[nv];
+        if (!N.barqueiro && !sel.length) { status.textContent = 'Alguém precisa ir no barco para remar.'; status.className = 'status erro'; return; }
+        const origem = barcoLado, destino = origem === 'E' ? 'D' : 'E';
+        sel.forEach(i => lado[i.id] = destino); sel = []; barcoLado = destino; viagens++;
+        const p = N.perigo(itens.filter(i => lado[i.id] === origem), false) || N.perigo(itens.filter(i => lado[i.id] === destino), true);
         if (p) { fim = true; status.textContent = p; status.className = 'status erro'; }
-        else if (Object.values(lado).every(v => v === 'D')) {
+        else if (itens.every(i => lado[i.id] === 'D')) {
           fim = true; status.className = 'status ok';
-          status.textContent = viagens === 7 ? 'Todos chegaram em ' + viagens + ' viagens. É o mínimo possível!' : 'Todos chegaram em ' + viagens + ' viagens. Dá para fazer em 7.';
+          status.textContent = 'Todos chegaram em ' + viagens + ' viagens. ' + (viagens === N.min ? 'É o mínimo possível!' : 'Dá para fazer em ' + N.min + '.');
         } else { status.textContent = ''; status.className = 'status'; }
         draw();
-      };
+      }
+      $('atravessar').onclick = atravessar;
       $('rioReset').onclick = reset;
-      $('rioDica').onclick = () => { $('rioDicaTxt').textContent = 'A ovelha é o problema: ela não pode ficar sozinha com ninguém. Comece levando a ovelha, e lembre que o barco pode trazer alguém de volta.'; };
+      $('rioDica').onclick = () => { $('rioDicaTxt').textContent = NIVEIS[nv].dica; };
+      $('travNivel').querySelectorAll('button').forEach(b => b.onclick = () => { nv = +b.dataset.n; reset(); });
       reset();
-      window.__rio = { get: () => ({ lado, fazendeiro, viagens, fim }) };
+      window.__trav = { nivel: n => { nv = n; reset(); }, get: () => ({ nv, lado: { ...lado }, barcoLado, viagens, fim }), levar: ids => { sel = itens.filter(i => ids.includes(i.id)); atravessar(); } };
+    })();
+
+    // ===== A ponte e a lanterna =====
+    (function () {
+      const P = [['a', '🧒', 'Criança', 1], ['b', '👧', 'Jovem', 2], ['c', '👨', 'Adulto', 5], ['d', '👵', 'Vovó', 10]].map(([id, emoji, nome, t]) => ({ id, emoji, nome, t }));
+      let lado, lant, sel, tempo, fim;
+      const status = $('ponteStatus');
+      function reset() { lado = {}; P.forEach(p => lado[p.id] = 'E'); lant = 'E'; sel = []; tempo = 0; fim = false; status.textContent = ''; status.className = 'status'; $('ponteDicaTxt').textContent = ''; draw(); }
+      function draw() {
+        for (const m of ['E', 'D']) {
+          const box = $('ponte' + m); box.innerHTML = ''; box.appendChild(el('h3', null, m === 'E' ? 'Lado de cá' : 'Lado de lá'));
+          P.filter(p => lado[p.id] === m).forEach(p => {
+            const b = el('button', 'item'); b.appendChild(el('i', null, p.emoji)); b.appendChild(document.createTextNode(p.nome + ': ' + p.t + ' min' + (sel.includes(p) ? ' (vai)' : '')));
+            b.disabled = fim || lant !== m; if (sel.includes(p)) b.style.borderColor = 'var(--c)';
+            b.onclick = () => {
+              if (sel.includes(p)) { sel = sel.filter(x => x !== p); draw(); return; }
+              if (sel.length >= 2) { status.textContent = 'A ponte aguenta no máximo duas pessoas.'; status.className = 'status erro'; return; }
+              sel.push(p); status.textContent = ''; status.className = 'status'; draw();
+            };
+            box.appendChild(b);
+          });
+        }
+        $('lanterna').style.transform = lant === 'D' ? 'scaleX(-1)' : '';
+        $('ponteTempo').textContent = tempo + ' min';
+        $('ponteIr').disabled = fim;
+      }
+      function ir() {
+        if (fim) return;
+        if (!sel.length) { status.textContent = 'Escolha quem vai cruzar com a lanterna.'; status.className = 'status erro'; return; }
+        const destino = lant === 'E' ? 'D' : 'E';
+        tempo += Math.max(...sel.map(p => p.t));
+        sel.forEach(p => lado[p.id] = destino); sel = []; lant = destino;
+        if (P.every(p => lado[p.id] === 'D')) { fim = true; status.className = 'status ok'; status.textContent = 'Todos cruzaram em ' + tempo + ' minutos. ' + (tempo <= 17 ? 'É o mínimo possível!' : 'Dá para fazer em 17.'); }
+        else { status.textContent = ''; status.className = 'status'; }
+        draw();
+      }
+      $('ponteIr').onclick = ir; $('ponteReset').onclick = reset;
+      $('ponteDica').onclick = () => { $('ponteDicaTxt').textContent = 'Os dois mais lentos precisam cruzar juntos, numa viagem só, e a lanterna deve voltar sempre com alguém rápido. Pense em quem já tem de estar do outro lado para trazê-la.'; };
+      reset();
+      window.__ponte = { get: () => ({ tempo, fim }), ir: ids => { sel = P.filter(p => ids.includes(p.id)); ir(); } };
+    })();
+
+    // ===== Rãs saltadoras =====
+    (function () {
+      const INI = ['V', 'V', 'V', '', 'M', 'M', 'M'], ALVO = ['M', 'M', 'M', '', 'V', 'V', 'V'];
+      let pedras, hist;
+      const status = $('rasStatus');
+      function reset() { pedras = INI.slice(); hist = []; status.textContent = ''; status.className = 'status'; draw(); }
+      function destino(i) {
+        const r = pedras[i]; if (!r) return -1;
+        const d = r === 'V' ? 1 : -1;
+        if (pedras[i + d] === '') return i + d;
+        if (pedras[i + d] && pedras[i + 2 * d] === '') return i + 2 * d;
+        return -1;
+      }
+      function travou() { return pedras.every((r, i) => !r || destino(i) < 0); }
+      function draw() {
+        const box = $('pedras'); box.innerHTML = '';
+        pedras.forEach((r, i) => {
+          const b = el('button', 'pedra' + (r === 'V' ? ' v' : r === 'M' ? ' m' : ''), r ? '🐸' : '');
+          b.setAttribute('aria-label', r === 'V' ? 'Rã verde' : r === 'M' ? 'Rã marrom' : 'Pedra vazia');
+          b.disabled = !r; b.onclick = () => mover(i); box.appendChild(b);
+        });
+        const n = hist.length;
+        $('rasNota').textContent = n + (n === 1 ? ' movimento' : ' movimentos') + '. O mínimo é 15. As verdes vão para a direita, as marrons para a esquerda.';
+        if (pedras.join() === ALVO.join()) { status.className = 'status ok'; status.textContent = 'As rãs trocaram de lado em ' + n + ' movimentos. ' + (n === 15 ? 'Perfeito!' : 'Dá para fazer em 15.'); }
+        else if (travou()) { status.className = 'status erro'; status.textContent = 'Travou: nenhuma rã consegue se mover. Desfaça ou recomece.'; }
+      }
+      function mover(i) {
+        if (pedras.join() === ALVO.join()) return;
+        const j = destino(i);
+        if (j < 0) { status.textContent = 'Essa rã não tem para onde ir.'; status.className = 'status erro'; return; }
+        hist.push(pedras.slice()); pedras[j] = pedras[i]; pedras[i] = ''; status.textContent = ''; status.className = 'status'; draw();
+      }
+      $('rasReset').onclick = reset;
+      $('rasDesfazer').onclick = () => { if (hist.length) { pedras = hist.pop(); status.textContent = ''; status.className = 'status'; draw(); } };
+      reset();
+      window.__ras = { get: () => ({ pedras: pedras.slice(), moves: hist.length }), mover };
+    })();
+
+    // ===== Jarros de água =====
+    (function () {
+      const NIVEIS = [{ A: 5, B: 3, alvo: 4 }, { A: 7, B: 5, alvo: 6 }];
+      let nv = 0, a, b, passos, fim, min;
+      const status = $('jarStatus');
+      // menor número de passos por busca em largura (para dizer o mínimo e dar a dica certa)
+      function vizinhos([x, y], A, B) { return [[A, y], [x, B], [0, y], [x, 0], [x - Math.min(x, B - y), y + Math.min(x, B - y)], [x + Math.min(y, A - x), y - Math.min(y, A - x)]]; }
+      function bfs(A, B, alvo) {
+        const ini = '0,0', dist = { [ini]: 0 }, fila = [[0, 0]], prev = {};
+        while (fila.length) {
+          const cur = fila.shift(), k = cur.join();
+          if (cur[0] === alvo || cur[1] === alvo) { const cam = []; let c = k; while (c !== ini) { cam.unshift(c); c = prev[c]; } return cam; }
+          for (const v of vizinhos(cur, A, B)) { const kk = v.join(); if (!(kk in dist)) { dist[kk] = dist[k] + 1; prev[kk] = k; fila.push(v); } }
+        }
+        return [];
+      }
+      function reset() {
+        const N = NIVEIS[nv]; a = 0; b = 0; passos = 0; fim = false; min = bfs(N.A, N.B, N.alvo).length;
+        $('jarRegras').textContent = 'Você tem um jarro de ' + N.A + ' litros, outro de ' + N.B + ' litros e uma torneira. Nenhum tem marcação. Meça exatamente ' + N.alvo + ' litros em um dos jarros. Pode encher, esvaziar e passar água de um para o outro.';
+        status.textContent = ''; status.className = 'status'; $('jarNota').textContent = ''; draw();
+      }
+      function draw() {
+        const N = NIVEIS[nv], box = $('jarrosBox'); box.innerHTML = '';
+        [['A', a, N.A], ['B', b, N.B]].forEach(([nome, v, cap]) => {
+          const j = el('div', 'jarro'); const vidro = el('div', 'vidro'); vidro.style.height = (60 + cap * 18) + 'px';
+          const agua = el('div', 'agua2'); agua.style.height = (v / cap * 100) + '%'; vidro.appendChild(agua); vidro.appendChild(el('span', null, v + ' L'));
+          j.appendChild(vidro); j.appendChild(el('b', null, 'Jarro de ' + cap + ' L')); box.appendChild(j);
+        });
+        const ac = $('jarAcoes'); ac.innerHTML = '';
+        [['Encher ' + N.A, () => a = N.A], ['Encher ' + N.B, () => b = N.B], ['Esvaziar ' + N.A, () => a = 0], ['Esvaziar ' + N.B, () => b = 0],
+         ['Passar ' + N.A + ' → ' + N.B, () => { const q = Math.min(a, N.B - b); a -= q; b += q; }], ['Passar ' + N.B + ' → ' + N.A, () => { const q = Math.min(b, N.A - a); b -= q; a += q; }]
+        ].forEach(([t, f]) => { const bt = el('button', 'btn ghost', t); bt.disabled = fim; bt.onclick = () => { const antes = a + ',' + b; f(); if (a + ',' + b !== antes) passos++; conferir(); draw(); }; ac.appendChild(bt); });
+        $('jarNota').textContent = passos + (passos === 1 ? ' passo' : ' passos') + '. O mínimo é ' + min + '.';
+      }
+      function conferir() {
+        const N = NIVEIS[nv];
+        if (a === N.alvo || b === N.alvo) { fim = true; status.className = 'status ok'; status.textContent = 'Mediu ' + N.alvo + ' litros em ' + passos + ' passos. ' + (passos === min ? 'É o mínimo possível!' : 'Dá para fazer em ' + min + '.'); }
+      }
+      $('jarNivel').querySelectorAll('button').forEach(bt => bt.onclick = () => { $('jarNivel').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === bt)); nv = +bt.dataset.n; reset(); });
+      $('jarReset').onclick = reset;
+      $('jarDica').onclick = () => {
+        const N = NIVEIS[nv];
+        // dica: o próximo estado do caminho mínimo a partir de onde está agora
+        const daqui = (function () { const ini = a + ',' + b; const dist = { [ini]: 0 }, fila = [[a, b]], prev = {}; while (fila.length) { const cur = fila.shift(), k = cur.join(); if (cur[0] === N.alvo || cur[1] === N.alvo) { let c = k, ult = k; while (prev[c] !== undefined && prev[c] !== ini) { c = prev[c]; } return c === ini ? ult : c; } for (const v of vizinhos(cur, N.A, N.B)) { const kk = v.join(); if (!(kk in dist)) { dist[kk] = dist[k] + 1; prev[kk] = k; fila.push(v); } } } return null; })();
+        if (daqui) { const [x, y] = daqui.split(',').map(Number); $('jarNota').textContent = 'Dica: o próximo passo deixa o jarro de ' + N.A + ' com ' + x + ' L e o de ' + N.B + ' com ' + y + ' L.'; }
+      };
+      reset();
+      window.__jarros = { get: () => ({ a, b, passos, fim, min }), set: (x, y) => { a = x; b = y; passos++; conferir(); draw(); } };
     })();
 
     // ===== Sudoku =====
