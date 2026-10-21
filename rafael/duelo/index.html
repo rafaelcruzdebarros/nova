@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Duelo de Dragões · 3D Barros</title>
+  <meta name="description" content="Jogo de cartas de dragões para dois jogadores no mesmo aparelho. Escolha um poder e vença a rodada.">
+  <meta name="theme-color" content="#0b1420">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 6 L62 30 L88 24 L72 46 L94 60 L66 62 L70 90 L50 72 L30 90 L34 62 L6 60 L28 46 L12 24 L38 30 Z' fill='%23ff6a2b'/%3E%3Ccircle cx='50' cy='50' r='13' fill='%230b1420'/%3E%3Ccircle cx='50' cy='50' r='6' fill='%232fc3d6'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../site.css">
+  <style>
+    :root { --c: var(--sol); --noite: #0b1420; --fogo: #ff6a2b; --mare: #2fc3d6; --pedra: #8ab35a; --raio: #b56cff; --noitec: #5ad0ff; --ok: #7ad96a; --erro: #ff5d5d; }
+    body { background-color: var(--noite); min-height: 100dvh; }
+    .wrap { width: min(720px, 100% - 32px); }
+    .top nav a.quem { color: var(--c); }
+    h2 { font-size: clamp(26px, 5vw, 36px); margin: 0; }
+    .lead { color: var(--muted); margin: 10px 0 20px; max-width: 60ch; }
+    .scr { display: none; padding: 6px 0 48px; } .scr.on { display: block; }
+    button { font: inherit; } .btn { cursor: pointer; }
+    .btn.c { background: var(--fogo); border-color: var(--fogo); color: var(--noite); }
+    .btn.c:hover { filter: brightness(1.1); background: var(--fogo); }
+    .btn.grande { font-size: 16px; padding: 14px 22px; }
+    .linha { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
+    .campo { display: grid; gap: 6px; margin: 10px 0; }
+    .campo label { font-size: 13px; color: var(--muted); font-weight: 700; }
+    .campo input { font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+    .campo input:focus { outline: 2px solid var(--fogo); outline-offset: 1px; }
+    .placar { display: flex; justify-content: space-between; gap: 10px; font-family: "Chakra Petch", sans-serif; font-size: 15px; margin-bottom: 14px; }
+    .placar span b { color: var(--fogo); }
+    .placar .meio { color: var(--muted); font-family: Manrope; font-size: 13px; }
+
+    /* carta */
+    .carta { --cc: var(--fogo); width: 100%; max-width: 300px; aspect-ratio: 63 / 88; border-radius: 16px; background: linear-gradient(180deg, #1a2838, #0f1926); border: 2px solid var(--cc); box-shadow: 0 20px 50px rgba(0,0,0,.5); position: relative; overflow: hidden; display: flex; flex-direction: column; margin: 0 auto; }
+    .carta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--cc) 28%, transparent), transparent 55%); pointer-events: none; }
+    .carta.fogo { --cc: var(--fogo); } .carta.mare { --cc: var(--mare); } .carta.pedra { --cc: var(--pedra); } .carta.raio { --cc: var(--raio); } .carta.noite { --cc: var(--noitec); }
+    .carta .topo { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 14px 6px; position: relative; }
+    .carta h3 { font-size: 19px; line-height: 1.05; text-transform: uppercase; letter-spacing: .02em; margin: 0; }
+    .carta .cls { display: block; font-weight: 800; font-size: 10px; letter-spacing: .18em; color: var(--cc); text-transform: uppercase; margin-top: 4px; }
+    .carta .num { font-family: "Chakra Petch", sans-serif; font-weight: 700; font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; }
+    .carta .selo { position: absolute; top: 48px; right: 12px; background: var(--fogo); color: #1a0a00; font-family: "Chakra Petch", sans-serif; font-weight: 700; font-size: 11px; letter-spacing: .12em; padding: 3px 8px; border-radius: 4px; transform: rotate(6deg); z-index: 1; }
+    .carta .selo.terror { background: var(--pedra); }
+    .carta .arte { position: relative; flex: 1; display: grid; place-items: center; min-height: 0; }
+    .carta .arte img { max-width: 92%; max-height: 92%; object-fit: contain; filter: drop-shadow(0 10px 14px rgba(0,0,0,.45)); }
+    .carta .arte .simbolo { font-size: 72px; line-height: 1; filter: drop-shadow(0 8px 12px rgba(0,0,0,.5)); }
+    .carta .poderes { position: relative; padding: 6px 12px 12px; display: grid; gap: 4px; }
+    .carta .poder { display: grid; grid-template-columns: 80px 1fr 34px; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 4px 6px; color: var(--ink); text-align: left; }
+    .carta .poder .barra { height: 7px; background: rgba(255,255,255,.08); border-radius: 4px; overflow: hidden; }
+    .carta .poder .barra i { display: block; height: 100%; width: var(--v); background: var(--cc); border-radius: 4px; }
+    .carta .poder b { font-family: "Chakra Petch", sans-serif; font-size: 15px; text-align: right; }
+    .carta.escolher .poder { cursor: pointer; border-color: rgba(255,255,255,.08); }
+    .carta.escolher .poder:hover, .carta.escolher .poder:focus-visible { border-color: var(--cc); background: rgba(255,255,255,.05); outline: none; }
+    .carta .poder.marcado { border-color: var(--sol); background: rgba(255,201,60,.12); }
+    .carta .poder.marcado b { color: var(--sol); }
+    .carta.vencedora { box-shadow: 0 0 0 3px var(--ok), 0 20px 50px rgba(0,0,0,.5); }
+    .carta.perdedora { opacity: .55; }
+    .verso { background: repeating-linear-gradient(45deg, #0f1926 0 10px, #131f2e 10px 20px); border-color: var(--line); display: grid; place-items: center; }
+    .verso .m { text-align: center; font-family: "Chakra Petch", sans-serif; font-size: 20px; text-transform: uppercase; line-height: 1; }
+    .verso .m span { display: block; color: var(--fogo); font-size: 11px; letter-spacing: .3em; margin-top: 8px; }
+    .duas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+    .duas .carta { max-width: none; }
+    .duas .carta h3 { font-size: 14px; } .duas .carta .poder { grid-template-columns: 58px 1fr 28px; font-size: 10.5px; padding: 3px 4px; } .duas .carta .poder b { font-size: 13px; }
+    .duas .carta .arte .simbolo { font-size: 48px; } .duas .carta .selo { font-size: 9px; top: 40px; }
+    .dono { text-align: center; font-family: "Chakra Petch", sans-serif; font-size: 14px; margin-bottom: 6px; color: var(--muted); }
+    .resultado { text-align: center; font-family: "Chakra Petch", sans-serif; font-size: 20px; margin: 18px 0 6px; min-height: 1.4em; }
+    .resultado.ok { color: var(--ok); } .resultado.erro { color: var(--erro); }
+    .motivo { text-align: center; color: var(--muted); margin: 0 0 16px; }
+    .mao { text-align: center; padding: 30px 0; }
+    .mao h2 { margin-bottom: 8px; }
+    .mao .btn { margin-top: 16px; }
+    .centro { text-align: center; }
+    .nota { color: var(--muted); font-size: 14px; }
+    .fim h2 { font-size: clamp(30px, 7vw, 44px); }
+    .fim .troféu { font-size: 64px; line-height: 1; margin-bottom: 10px; }
+    details { margin-top: 24px; color: var(--muted); font-size: 14px; }
+    details summary { cursor: pointer; color: var(--ink); font-weight: 700; }
+    details ol { margin: 8px 0 0 18px; padding: 0; } details li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="mark" href="../../">3D Barros</a>
+      <nav aria-label="Navegação"><a class="quem" href="../../#rafael">Rafael</a></nav>
+    </header>
+
+    <main>
+      <!-- início -->
+      <section class="scr on" id="inicio">
+        <h2>Duelo de Dragões</h2>
+        <p class="lead">Jogo de cartas para duas pessoas no mesmo aparelho. Cada um só vê a própria carta de cima. Quem tem a vez escolhe um poder, e o número maior vence a rodada.</p>
+        <div class="campo"><label for="n1">Jogador 1</label><input id="n1" maxlength="16" placeholder="Nome ou apelido"></div>
+        <div class="campo"><label for="n2">Jogador 2</label><input id="n2" maxlength="16" placeholder="Nome ou apelido"></div>
+        <div class="linha">
+          <div class="seg" id="tamanho"><button type="button" data-n="24" class="on">Baralho inteiro · 24</button><button type="button" data-n="12">Rápido · 12</button></div>
+        </div>
+        <div class="linha"><button class="btn c grande" id="comecar">Começar</button></div>
+        <details>
+          <summary>Regras</summary>
+          <ol>
+            <li>As cartas são divididas igualmente. Cada um só olha a carta de cima do seu monte.</li>
+            <li>Quem tem a vez escolhe um dos cinco poderes. O outro usa o mesmo poder da carta dele. O número maior vence e leva as duas cartas para o fundo do monte.</li>
+            <li>Quem venceu escolhe o poder na próxima rodada.</li>
+            <li>Em caso de empate, as cartas ficam no meio e quem escolheu escolhe de novo. Quem vencer leva tudo.</li>
+            <li>O Alfa ganha de qualquer carta, menos do Pequeno Terror. O Pequeno Terror só ganha do Alfa.</li>
+            <li>Vence quem ficar com todas as cartas. Também dá para encerrar a qualquer momento: vence quem tiver mais.</li>
+          </ol>
+        </details>
+      </section>
+
+      <!-- passar o aparelho -->
+      <section class="scr" id="mao">
+        <div class="placar" id="placarMao"></div>
+        <div class="mao">
+          <div class="carta verso" style="max-width: 220px"><div class="m">Duelo de<br>Dragões<span>vez de</span></div></div>
+          <h2 id="maoNome" style="margin-top: 18px"></h2>
+          <p class="nota">Passe o aparelho. Só essa pessoa deve ver a carta.</p>
+          <button class="btn c grande" id="verCarta">Ver minha carta</button>
+        </div>
+      </section>
+
+      <!-- escolher o poder -->
+      <section class="scr" id="escolha">
+        <div class="placar" id="placarEscolha"></div>
+        <p class="dono" id="escolhaDono"></p>
+        <div id="cartaEscolha"></div>
+        <p class="centro nota" style="margin-top: 14px">Toque no poder que vai disputar esta rodada.</p>
+      </section>
+
+      <!-- resultado -->
+      <section class="scr" id="revela">
+        <div class="placar" id="placarRevela"></div>
+        <div class="duas">
+          <div><p class="dono" id="dono1"></p><div id="carta1"></div></div>
+          <div><p class="dono" id="dono2"></p><div id="carta2"></div></div>
+        </div>
+        <div class="resultado" id="resultado"></div>
+        <p class="motivo" id="motivo"></p>
+        <div class="linha centro" style="justify-content: center"><button class="btn c grande" id="continuar">Continuar</button><button class="btn ghost" id="encerrar">Encerrar partida</button></div>
+      </section>
+
+      <!-- fim -->
+      <section class="scr fim" id="fim">
+        <div class="centro">
+          <div class="troféu">🏆</div>
+          <h2 id="fimTitulo"></h2>
+          <p class="lead" id="fimTexto" style="margin-left: auto; margin-right: auto"></p>
+          <div class="linha" style="justify-content: center"><button class="btn c grande" id="denovo">Jogar de novo</button></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>3dbarros.com.br</span>
+      <span>Duelo de Dragões, do Rafael</span>
+    </footer>
+  </div>
+
+  <script src="cartas.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+    const SIMB = { Fogo: '🔥', 'Maré': '🌊', Pedra: '🪨', Raio: '⚡', Noite: '🌙' };
+    const CLS = { Fogo: 'fogo', 'Maré': 'mare', Pedra: 'pedra', Raio: 'raio', Noite: 'noite' };
+    const TELAS = ['inicio', 'mao', 'escolha', 'revela', 'fim'];
+    function tela(id) { TELAS.forEach(t => $(t).classList.toggle('on', t === id)); window.scrollTo(0, 0); }
+
+    // ---------- estado ----------
+    let nomes, montes, meio, vez, rodada, tamanho = 24, baralho;
+    function embaralha(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    function comecar() {
+      nomes = [$('n1').value.trim() || 'Jogador 1', $('n2').value.trim() || 'Jogador 2'];
+      baralho = CARTAS.map((c, i) => ({ ...c, num: i + 1 }));
+      let cartas = embaralha(baralho.slice());
+      if (tamanho < cartas.length) {
+        // no baralho rápido, Alfa e Pequeno Terror sempre entram
+        const fixas = cartas.filter(c => c.papel), resto = cartas.filter(c => !c.papel);
+        cartas = embaralha(fixas.concat(resto.slice(0, tamanho - fixas.length)));
+      }
+      montes = [cartas.slice(0, cartas.length / 2), cartas.slice(cartas.length / 2)];
+      meio = []; vez = Math.floor(Math.random() * 2); rodada = 0;
+      passar();
+    }
+    function placar(id) {
+      const p = $(id); p.innerHTML = '';
+      p.appendChild(el('span', null, nomes[0] + ': ')).appendChild(el('b', null, montes[0].length));
+      p.appendChild(el('span', 'meio', 'rodada ' + (rodada + 1) + (meio.length ? ' · ' + meio.length + ' no meio' : '')));
+      p.appendChild(el('span', null, nomes[1] + ': ')).appendChild(el('b', null, montes[1].length));
+    }
+    function cartaEl(c, opts) {
+      opts = opts || {};
+      const d = el('div', 'carta ' + CLS[c.classe] + (opts.escolher ? ' escolher' : ''));
+      const topo = el('div', 'topo'); const t = el('div'); t.appendChild(el('h3', null, c.nome)); t.appendChild(el('span', 'cls', 'Classe ' + c.classe)); topo.appendChild(t);
+      topo.appendChild(el('span', 'num', String(c.num).padStart(2, '0') + '/' + CARTAS.length)); d.appendChild(topo);
+      if (c.papel) d.appendChild(el('span', 'selo' + (c.papel === 'terror' ? ' terror' : ''), c.papel === 'alfa' ? 'ALFA' : 'PEQUENO TERROR'));
+      const arte = el('div', 'arte');
+      if (c.imagem) { const img = el('img'); img.src = 'imagens/' + c.imagem; img.alt = c.nome; arte.appendChild(img); }
+      else arte.appendChild(el('span', 'simbolo', SIMB[c.classe] || '🐉'));
+      d.appendChild(arte);
+      const ps = el('div', 'poderes');
+      PODERES.forEach((p, i) => {
+        const b = el(opts.escolher ? 'button' : 'div', 'poder' + (opts.marcado === i ? ' marcado' : ''));
+        if (opts.escolher) b.type = 'button';
+        b.appendChild(el('span', null, p)); const barra = el('span', 'barra'); const fill = el('i'); fill.style.setProperty('--v', c.poderes[i] + '%'); barra.appendChild(fill); b.appendChild(barra); b.appendChild(el('b', null, c.poderes[i]));
+        if (opts.escolher) b.onclick = () => opts.aoEscolher(i);
+        ps.appendChild(b);
+      });
+      d.appendChild(ps);
+      return d;
+    }
+    function passar() {
+      if (!montes[0].length || !montes[1].length) return fim();
+      placar('placarMao'); $('maoNome').textContent = nomes[vez]; tela('mao');
+    }
+    function escolher() {
+      placar('placarEscolha'); $('escolhaDono').textContent = 'Carta de ' + nomes[vez];
+      const box = $('cartaEscolha'); box.innerHTML = ''; box.appendChild(cartaEl(montes[vez][0], { escolher: true, aoEscolher: disputar }));
+      tela('escolha');
+    }
+    // Quem vence: Alfa ganha de tudo menos do Terror; Terror só ganha do Alfa; senão, o número do poder.
+    // Devolve 0 ou 1 (índice do vencedor) ou -1 para empate, e o motivo em texto.
+    function decidir(a, b, poder) {
+      const pa = a.papel, pb = b.papel;
+      if (pa === 'alfa' && pb === 'terror') return [1, 'O Pequeno Terror é a única carta que vence o Alfa!'];
+      if (pb === 'alfa' && pa === 'terror') return [0, 'O Pequeno Terror é a única carta que vence o Alfa!'];
+      if (pa === 'alfa') return [0, 'O Alfa vence qualquer carta.'];
+      if (pb === 'alfa') return [1, 'O Alfa vence qualquer carta.'];
+      const va = a.poderes[poder], vb = b.poderes[poder];
+      if (va === vb) return [-1, PODERES[poder] + ' ' + va + ' contra ' + vb + ': empate.'];
+      return [va > vb ? 0 : 1, PODERES[poder] + ': ' + Math.max(va, vb) + ' contra ' + Math.min(va, vb) + '.'];
+    }
+    let pendente = null;
+    function disputar(poder) {
+      const a = montes[0][0], b = montes[1][0];
+      const [v, motivo] = decidir(a, b, poder);
+      rodada++;
+      placar('placarRevela');
+      $('dono1').textContent = nomes[0]; $('dono2').textContent = nomes[1];
+      const c1 = cartaEl(a, { marcado: poder }), c2 = cartaEl(b, { marcado: poder });
+      if (v === 0) { c1.classList.add('vencedora'); c2.classList.add('perdedora'); }
+      if (v === 1) { c2.classList.add('vencedora'); c1.classList.add('perdedora'); }
+      $('carta1').innerHTML = ''; $('carta1').appendChild(c1); $('carta2').innerHTML = ''; $('carta2').appendChild(c2);
+      const r = $('resultado');
+      if (v < 0) { r.textContent = 'Empate!'; r.className = 'resultado'; $('motivo').textContent = motivo + ' As cartas ficam no meio e ' + nomes[vez] + ' escolhe de novo.'; }
+      else { r.textContent = nomes[v] + ' venceu a rodada'; r.className = 'resultado ok'; $('motivo').textContent = motivo; }
+      pendente = { v, poder };
+      tela('revela');
+    }
+    function continuar() {
+      const { v } = pendente; pendente = null;
+      const a = montes[0].shift(), b = montes[1].shift();
+      if (v < 0) { meio.push(a, b); }
+      else { montes[v].push(...embaralha([a, b].concat(meio))); meio = []; vez = v; }
+      passar();
+    }
+    function fim(encerrado) {
+      const n0 = montes[0].length + (meio.length && !encerrado ? 0 : 0), n1 = montes[1].length;
+      let venc = n0 === n1 ? -1 : n0 > n1 ? 0 : 1;
+      $('fimTitulo').textContent = venc < 0 ? 'Empate!' : nomes[venc] + ' venceu!';
+      $('fimTexto').textContent = (encerrado ? 'Partida encerrada em ' : 'Fim de jogo em ') + rodada + (rodada === 1 ? ' rodada. ' : ' rodadas. ') + nomes[0] + ' ficou com ' + n0 + (n0 === 1 ? ' carta' : ' cartas') + ' e ' + nomes[1] + ' com ' + n1 + (n1 === 1 ? ' carta.' : ' cartas.');
+      tela('fim');
+    }
+    $('tamanho').querySelectorAll('button').forEach(b => b.onclick = () => { $('tamanho').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); tamanho = +b.dataset.n; });
+    $('comecar').onclick = comecar;
+    $('verCarta').onclick = escolher;
+    $('continuar').onclick = continuar;
+    $('encerrar').onclick = () => { if (pendente) { continuar(); } fim(true); };
+    $('denovo').onclick = () => tela('inicio');
+    window.__duelo = { get: () => ({ montes: montes.map(m => m.map(c => c.nome)), meio: meio.map(c => c.nome), vez, rodada }), decidir, comecar, escolher, disputar, continuar };
+  })();
+  </script>
+</body>
+</html>

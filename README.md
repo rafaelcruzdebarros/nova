@@ -15,6 +15,7 @@ O GitHub Pages publica a raiz deste repositório. Cada pasta vira um endereço:
 | `pecas/` | `3dbarros.com.br/pecas/`, a galeria das peças impressas em 3D |
 | `pecas/pecas.js` | lista das peças; as fotos ficam em `pecas/fotos/` |
 | `matheus/desafios/` | os Desafios de Lógica do Matheus: travessia do rio, Sudoku, Torre de Hanói e charadas |
+| `rafael/duelo/` | o Duelo de Dragões do Rafael, jogo de cartas para dois; as cartas ficam em `rafael/duelo/cartas.js` e as imagens em `rafael/duelo/imagens/` |
 | `andre/arcade/` | o Arcade do André, com os jogos dele (cópia de andrecruzdebarros/jogos) |
 | `site.css` | o visual do site (home, galeria e 404) |
 | `404.html` | página de endereço errado; volta para a home |
