@@ -45,6 +45,16 @@ const PROJETOS = [
     quando: "2026"
   },
 
+  // Jogo de cartas do Rafael (rafael/duelo/). As cartas ficam em rafael/duelo/cartas.js.
+  {
+    nome: "Duelo de Dragões",
+    descricao: "Jogo de cartas com 24 dragões e cinco poderes. Dois jogadores no mesmo aparelho.",
+    emoji: "🐉",
+    link: "rafael/duelo/",
+    quem: "rafael",
+    quando: "10/2026"
+  },
+
   // Desafios de lógica do Matheus (matheus/desafios/). Cada link abre um desafio direto.
   {
     nome: "Travessias",
