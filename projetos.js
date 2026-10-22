@@ -147,6 +147,30 @@ const PROJETOS = [
     quando: "10/2026"
   },
   {
+    nome: "Basquete",
+    descricao: "Puxe como um estilingue e arremesse. Cesta limpa vale 3. Você tem 60 segundos.",
+    emoji: "🏀",
+    link: "andre/arcade/#s-basq",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
+    nome: "Vôlei",
+    descricao: "Contra a CPU ou em dupla, no mesmo aparelho. Quem fizer 7 pontos vence.",
+    emoji: "🏐",
+    link: "andre/arcade/#s-volei",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
+    nome: "Atletismo 100 m",
+    descricao: "Espere o \"JÁ!\" e alterne os lados o mais rápido que puder. Sozinho ou em dupla.",
+    emoji: "🏃",
+    link: "andre/arcade/#s-atl",
+    quem: "andre",
+    quando: "10/2026"
+  },
+  {
     nome: "Luta",
     descricao: "Soco e defesa contra a CPU, no teclado ou na tela.",
     emoji: "🥊",
