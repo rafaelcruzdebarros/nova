@@ -33,11 +33,12 @@
     .placar .meio { color: var(--muted); font-family: Manrope; font-size: 13px; }
 
     /* carta */
-    /* A moldura segue o desenho das cartas que o Rafael fez (out/2026): borda na cor da
+    /* Carta com imagem: a carta do Rafael inteira de fundo, só o painel dos poderes por cima (.cartafoto).
+       Carta sem imagem: moldura desenhada aqui, no desenho das cartas dele (out/2026): borda na cor da
        classe, emblema redondo no canto, caixa de informação à direita, nome grande sobre
        faixa escura e o painel claro com uma barra colorida por poder. Tudo em cqw, a
        largura da carta: a mesma carta serve inteira (escolha) e pequena (lado a lado). */
-    .carta { width: 100%; max-width: 320px; margin: 0 auto; container-type: inline-size; position: relative; }
+    .carta { width: 100%; max-width: 320px; margin: 0 auto; container-type: inline-size; position: relative; aspect-ratio: auto; overflow: visible; height: auto; } /* o site.css tem outra .carta (quadrada); aqui a altura é a do conteúdo */
     .carta .moldura { --cc: var(--fogo); border: 1cqw solid var(--cc); border-radius: 5cqw; background: #0b1422; box-shadow: inset 0 0 0 .6cqw #06101c, 0 0 18px color-mix(in srgb, var(--cc) 40%, transparent), 0 16px 40px rgba(0,0,0,.5); overflow: hidden; padding: 1.6cqw; display: flex; flex-direction: column; position: relative; }
     .carta.fogo .moldura { --cc: var(--fogo); } .carta.mare .moldura { --cc: var(--mare); } .carta.pedra .moldura { --cc: var(--pedra); } .carta.raio .moldura { --cc: var(--raio); } .carta.noite .moldura { --cc: var(--noitec); }
     .carta .arte { position: relative; aspect-ratio: 1.72; border-radius: 3cqw; overflow: hidden; background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--cc) 45%, #1a2a44), #0a1424 72%); display: grid; place-items: center; }
@@ -63,6 +64,11 @@
     .carta.escolher .poder:hover, .carta.escolher .poder:focus-visible { border-color: var(--pc); background: #fff; outline: none; }
     .carta .poder.marcado { border-color: #e0a800; background: #fff3c4; }
     .carta .rodape { text-align: center; font-size: 4cqw; line-height: 1; padding: 1.6cqw 0 .4cqw; color: var(--cc); letter-spacing: .6em; text-indent: .6em; }
+    /* carta com a imagem do Rafael inteira de fundo: só o painel dos poderes é desenhado por cima */
+    .carta.cartafoto .moldura { padding: 0; border: 0; height: 150cqw; background: #07101d; }
+    .carta.cartafoto .fundo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .carta.cartafoto .poderes { position: absolute; left: 4.6%; right: 4.6%; top: calc(var(--pt) - .4%); bottom: calc(100% - var(--pb) + .6%); margin: 0; border-radius: 1.6cqw; background: #e6eaf0; padding: 1cqw 1.6cqw; display: flex; flex-direction: column; justify-content: space-around; gap: 0; box-shadow: inset 0 0 0 .3cqw rgba(0,0,0,.08); }
+    .carta.cartafoto .poder { padding: .5cqw 1cqw; }
     .carta.vencedora .moldura { box-shadow: 0 0 0 1.2cqw var(--ok), 0 16px 40px rgba(0,0,0,.5); }
     .carta.perdedora { opacity: .55; }
     .carta.verso { aspect-ratio: 63 / 88; border-radius: 16px; border: 2px solid var(--line); background: repeating-linear-gradient(45deg, #0f1926 0 10px, #131f2e 10px 20px); display: grid; place-items: center; }
@@ -202,20 +208,26 @@
     const ICONE = ['🔥', '⚡', '💪', '📏', '🧠'];
     function cartaEl(c, opts) {
       opts = opts || {};
-      const d = el('div', 'carta ' + CLS[c.classe] + (opts.escolher ? ' escolher' : ''));
+      const d = el('div', 'carta ' + CLS[c.classe] + (opts.escolher ? ' escolher' : '') + (c.imagem ? ' cartafoto' : ''));
       const m = el('div', 'moldura'); d.appendChild(m);
-      m.appendChild(el('span', 'emblema', SIMB[c.classe] || '🐉'));
-      const arte = el('div', 'arte');
-      if (c.imagem) { const img = el('img'); img.src = 'imagens/' + c.imagem; img.alt = ''; arte.appendChild(img); }
-      else arte.appendChild(el('span', 'simbolo', SIMB[c.classe] || '🐉'));
-      const info = el('div', 'info');
-      info.appendChild(el('span', null, 'Classe')); info.appendChild(el('b', null, c.classe));
-      info.appendChild(el('span', null, 'Carta')); info.appendChild(el('b', null, String(c.num).padStart(2, '0') + ' de ' + CARTAS.length));
-      arte.appendChild(info); m.appendChild(arte);
-      const nome = el('div', 'nome'); nome.appendChild(el('h3', null, c.nome));
-      nome.appendChild(el('span', 'sub', c.papel === 'alfa' ? 'O Alfa · vence todos, menos o Terror' : c.papel === 'terror' ? 'O Pequeno Terror · só vence o Alfa' : SUB[c.classe] || 'Dragão'));
-      m.appendChild(nome);
       const ps = el('div', 'poderes');
+      if (c.imagem) {
+        // a carta do Rafael inteira é o fundo; o painel dos poderes vai onde a imagem tem o dela
+        const img = el('img', 'fundo'); img.src = 'imagens/' + c.imagem; img.alt = c.nome + ' (carta)'; m.appendChild(img);
+        const pn = c.painel || [0.55, 0.92];
+        ps.style.setProperty('--pt', (pn[0] * 100) + '%'); ps.style.setProperty('--pb', (pn[1] * 100) + '%');
+      } else {
+        m.appendChild(el('span', 'emblema', SIMB[c.classe] || '🐉'));
+        const arte = el('div', 'arte');
+        arte.appendChild(el('span', 'simbolo', SIMB[c.classe] || '🐉'));
+        const info = el('div', 'info');
+        info.appendChild(el('span', null, 'Classe')); info.appendChild(el('b', null, c.classe));
+        info.appendChild(el('span', null, 'Carta')); info.appendChild(el('b', null, String(c.num).padStart(2, '0') + ' de ' + CARTAS.length));
+        arte.appendChild(info); m.appendChild(arte);
+        const nome = el('div', 'nome'); nome.appendChild(el('h3', null, c.nome));
+        nome.appendChild(el('span', 'sub', c.papel === 'alfa' ? 'O Alfa · vence todos, menos o Terror' : c.papel === 'terror' ? 'O Pequeno Terror · só vence o Alfa' : SUB[c.classe] || 'Dragão'));
+        m.appendChild(nome);
+      }
       PODERES.forEach((p, i) => {
         const b = el(opts.escolher ? 'button' : 'div', 'poder p' + i + (opts.marcado === i ? ' marcado' : ''));
         if (opts.escolher) b.type = 'button';
@@ -226,7 +238,7 @@
         ps.appendChild(b);
       });
       m.appendChild(ps);
-      m.appendChild(el('div', 'rodape', '⟡ ' + (SIMB[c.classe] || '🐉') + ' ⟡'));
+      if (!c.imagem) m.appendChild(el('div', 'rodape', '⟡ ' + (SIMB[c.classe] || '🐉') + ' ⟡'));
       return d;
     }
     function passar() {
