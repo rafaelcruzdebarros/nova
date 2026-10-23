@@ -28,6 +28,12 @@
     .campo label { font-size: 13px; color: var(--muted); font-weight: 700; }
     .campo input { font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
     .campo input:focus { outline: 2px solid var(--fogo); outline-offset: 1px; }
+    .opcoes { display: grid; gap: 8px; margin: 14px 0; }
+    .opc { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; }
+    .opc input { width: 20px; height: 20px; accent-color: var(--fogo); grid-row: span 2; margin: 0; }
+    .opc b { font-size: 14px; } .opc span { font-size: 12.5px; color: var(--muted); }
+    .clima { display: none; align-items: center; gap: 12px; background: rgba(53,208,220,.08); border: 1px solid rgba(53,208,220,.35); border-radius: var(--radius); padding: 10px 12px; margin: 0 0 12px; text-align: left; }
+    .clima.on { display: flex; } .clima .ic { font-size: 28px; line-height: 1; } .clima b { display: block; font-family: "Chakra Petch", sans-serif; font-size: 14px; } .clima span { font-size: 13px; color: var(--muted); }
     .placar { display: flex; justify-content: space-between; gap: 10px; font-family: "Chakra Petch", sans-serif; font-size: 15px; margin-bottom: 14px; }
     .placar span b { color: var(--fogo); }
     .placar .meio { color: var(--muted); font-family: Manrope; font-size: 13px; }
@@ -56,6 +62,8 @@
     .carta .poder .ico { width: 6.8cqw; aspect-ratio: 1; border-radius: 50%; background: var(--pc); display: grid; place-items: center; font-size: 3.6cqw; line-height: 1; box-shadow: inset 0 0 0 .5cqw rgba(255,255,255,.35); }
     .carta .poder .lb { display: grid; gap: .7cqw; min-width: 0; }
     .carta .poder .lb span { font-size: 3.3cqw; font-weight: 800; line-height: 1; }
+    .carta .poder .lb span em { font-style: normal; font-weight: 700; font-size: 2.7cqw; margin-left: 1cqw; color: #0a7f3f; } .carta .poder .lb span em.menos { color: #b3261e; }
+    .carta .poder.bloqueado { opacity: .45; } .carta .poder.bloqueado .barra i { background: #9aa3ad; } .carta.escolher .poder.bloqueado { cursor: not-allowed; }
     .carta .poder .barra { height: 1.9cqw; background: #c6ccd4; border-radius: 1cqw; overflow: hidden; }
     .carta .poder .barra i { display: block; height: 100%; width: var(--v); background: var(--pc); border-radius: 1cqw; }
     .carta .poder b { font-family: "Chakra Petch", sans-serif; font-size: 5.2cqw; text-align: right; line-height: 1; }
@@ -109,6 +117,10 @@
         <div class="linha">
           <div class="seg" id="tamanho"><button type="button" data-n="24" class="on">Baralho inteiro · 24</button><button type="button" data-n="12">Rápido · 12</button></div>
         </div>
+        <div class="opcoes">
+          <label class="opc"><input type="checkbox" id="optClima" checked><b>☔ Clima da rodada</b><span>A cada rodada um clima muda alguns poderes, por classe de dragão. Os dois veem o clima antes da escolha.</span></label>
+          <label class="opc"><input type="checkbox" id="optCansaco" checked><b>😮‍💨 Cansaço</b><span>O poder que venceu uma rodada perde 10 pontos naquela carta até o fim da partida.</span></label>
+        </div>
         <div class="linha"><button class="btn c grande" id="comecar">Começar</button></div>
         <details>
           <summary>Regras</summary>
@@ -119,6 +131,8 @@
             <li>Em caso de empate, as cartas ficam no meio e quem escolheu escolhe de novo. Quem vencer leva tudo.</li>
             <li>O Alfa ganha de qualquer carta, menos do Pequeno Terror. O Pequeno Terror só ganha do Alfa.</li>
             <li>Dica: cada poder tem a própria escala. Um 70 de Fogo é comum, um 70 de Tamanho é raro. Quem conhece o baralho escolhe melhor.</li>
+            <li>Com o <b>Clima da rodada</b> ligado, cada rodada sorteia um clima que soma ou tira pontos de alguns poderes conforme a classe do dragão, ou proíbe um poder. O clima aparece para os dois antes da escolha, e a carta mostra o valor já ajustado.</li>
+            <li>Com o <b>Cansaço</b> ligado, o poder que venceu perde 10 pontos naquela carta até o fim da partida. Repetir o mesmo truque cansa.</li>
             <li>Vence quem ficar com todas as cartas. Também dá para encerrar a qualquer momento: vence quem tiver mais.</li>
           </ol>
         </details>
@@ -127,6 +141,7 @@
       <!-- passar o aparelho -->
       <section class="scr" id="mao">
         <div class="placar" id="placarMao"></div>
+        <div class="clima" id="climaMao"></div>
         <div class="mao">
           <div class="carta verso" style="max-width: 220px"><div class="m">Duelo de<br>Dragões<span>vez de</span></div></div>
           <h2 id="maoNome" style="margin-top: 18px"></h2>
@@ -138,6 +153,7 @@
       <!-- escolher o poder -->
       <section class="scr" id="escolha">
         <div class="placar" id="placarEscolha"></div>
+        <div class="clima" id="climaEscolha"></div>
         <p class="dono" id="escolhaDono"></p>
         <div id="cartaEscolha"></div>
         <p class="centro nota" style="margin-top: 14px">Toque no poder que vai disputar esta rodada.</p>
@@ -146,6 +162,7 @@
       <!-- resultado -->
       <section class="scr" id="revela">
         <div class="placar" id="placarRevela"></div>
+        <div class="clima" id="climaRevela"></div>
         <div class="duas">
           <div><p class="dono" id="dono1"></p><div id="carta1"></div></div>
           <div><p class="dono" id="dono2"></p><div id="carta2"></div></div>
@@ -185,10 +202,49 @@
 
     // ---------- estado ----------
     let nomes, montes, meio, vez, rodada, tamanho = 24, baralho;
+    // Clima da rodada: cada efeito é [classe ou null (todas), índice do poder, pontos]; bloqueia é um poder que não pode ser escolhido.
+    const CLIMAS = [
+      { nome: 'Chuva', ic: '☔', texto: 'Dragões de Fogo perdem 15 de Fogo. Dragões da Maré ganham 10 de Velocidade.', efeitos: [['Fogo', 0, -15], ['Maré', 1, 10]] },
+      { nome: 'Noite escura', ic: '🌙', texto: 'Dragões da Noite ganham 12 de Esperteza. Dragões do Raio perdem 8 de Velocidade.', efeitos: [['Noite', 4, 12], ['Raio', 1, -8]] },
+      { nome: 'Vento forte', ic: '💨', texto: 'Velocidade não pode ser escolhida. Dragões de Pedra ganham 8 de Força.', bloqueia: 1, efeitos: [['Pedra', 2, 8]] },
+      { nome: 'Tempestade', ic: '⛈️', texto: 'Dragões do Raio ganham 12 de Velocidade e 8 de Fogo. Dragões da Maré perdem 8 de Esperteza.', efeitos: [['Raio', 1, 12], ['Raio', 0, 8], ['Maré', 4, -8]] },
+      { nome: 'Sol a pino', ic: '☀️', texto: 'Dragões de Fogo ganham 10 de Fogo. Dragões da Noite perdem 10 de Esperteza.', efeitos: [['Fogo', 0, 10], ['Noite', 4, -10]] },
+      { nome: 'Névoa', ic: '🌫️', texto: 'Esperteza não pode ser escolhida. Dragões da Noite ganham 10 de Velocidade.', bloqueia: 4, efeitos: [['Noite', 1, 10]] },
+      { nome: 'Terra tremendo', ic: '🌋', texto: 'Dragões de Pedra ganham 15 de Força. Dragões de Fogo e do Raio perdem 8 de Tamanho.', efeitos: [['Pedra', 2, 15], ['Fogo', 3, -8], ['Raio', 3, -8]] },
+      { nome: 'Maré alta', ic: '🌊', texto: 'Dragões da Maré ganham 12 de Força. Dragões de Fogo perdem 8 de Velocidade.', efeitos: [['Maré', 2, 12], ['Fogo', 1, -8]] },
+      { nome: 'Calmaria', ic: '🍃', texto: 'Nada muda nesta rodada.', efeitos: [] }
+    ];
+    const opcoes = { clima: true, cansaco: true };
+    let clima = null;
+    function sortearClima() {
+      if (!opcoes.clima) { clima = null; return; }
+      let c; do { c = CLIMAS[Math.floor(Math.random() * CLIMAS.length)]; } while (CLIMAS.length > 1 && c === clima);
+      clima = c;
+    }
+    function mostrarClima() {
+      ['climaMao', 'climaEscolha', 'climaRevela'].forEach(id => {
+        const box = $(id); box.innerHTML = ''; box.classList.toggle('on', !!clima);
+        if (!clima) return;
+        box.appendChild(el('span', 'ic', clima.ic));
+        const t = el('div'); t.appendChild(el('b', null, 'Clima da rodada: ' + clima.nome)); t.appendChild(el('span', null, clima.texto)); box.appendChild(t);
+      });
+    }
+    // O que o clima e o cansaço fazem com cada poder desta carta: { delta, notas, bloqueado }.
+    function modificadores(c) {
+      return PODERES.map((_, i) => {
+        let delta = 0; const notas = [];
+        if (clima) for (const [cls, p, d] of clima.efeitos) if (p === i && (!cls || cls === c.classe)) { delta += d; notas.push((d > 0 ? '+' : '−') + Math.abs(d) + ' ' + clima.nome.toLowerCase()); }
+        if (opcoes.cansaco && c.cansaco && c.cansaco[i]) { delta -= c.cansaco[i]; notas.push('−' + c.cansaco[i] + ' cansaço'); }
+        return { delta, notas, bloqueado: !!(clima && clima.bloqueia === i) };
+      });
+    }
+    // O valor que vale na rodada: o da carta mais os ajustes, nunca abaixo de 1.
+    function valor(c, i, mods) { return Math.max(1, c.poderes[i] + (mods || modificadores(c))[i].delta); }
     function embaralha(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
     function comecar() {
       nomes = [$('n1').value.trim() || 'Jogador 1', $('n2').value.trim() || 'Jogador 2'];
-      baralho = CARTAS.map((c, i) => ({ ...c, num: i + 1 }));
+      opcoes.clima = $('optClima').checked; opcoes.cansaco = $('optCansaco').checked;
+      baralho = CARTAS.map((c, i) => ({ ...c, num: i + 1, cansaco: [0, 0, 0, 0, 0] }));
       let cartas = embaralha(baralho.slice());
       if (tamanho < cartas.length) {
         // no baralho rápido, Alfa e Pequeno Terror sempre entram
@@ -229,13 +285,18 @@
         nome.appendChild(el('span', 'sub', c.papel === 'alfa' ? 'O Alfa · vence todos, menos o Terror' : c.papel === 'terror' ? 'O Pequeno Terror · só vence o Alfa' : SUB[c.classe] || 'Dragão'));
         m.appendChild(nome);
       }
+      const mods = modificadores(c);
       PODERES.forEach((p, i) => {
-        const b = el(opts.escolher ? 'button' : 'div', 'poder p' + i + (opts.marcado === i ? ' marcado' : ''));
-        if (opts.escolher) b.type = 'button';
+        const m = mods[i], v = valor(c, i, mods);
+        const b = el(opts.escolher ? 'button' : 'div', 'poder p' + i + (opts.marcado === i ? ' marcado' : '') + (m.bloqueado ? ' bloqueado' : ''));
+        if (opts.escolher) { b.type = 'button'; if (m.bloqueado) b.disabled = true; }
         b.appendChild(el('span', 'ico', ICONE[i]));
-        const lb = el('span', 'lb'); lb.appendChild(el('span', null, p)); const barra = el('span', 'barra'); const fill = el('i'); fill.style.setProperty('--v', c.poderes[i] + '%'); barra.appendChild(fill); lb.appendChild(barra); b.appendChild(lb);
-        b.appendChild(el('b', null, c.poderes[i]));
-        if (opts.escolher) b.onclick = () => opts.aoEscolher(i);
+        const lb = el('span', 'lb'); const rot = el('span', null, p);
+        if (m.bloqueado) rot.appendChild(el('em', 'menos', '✕ ' + clima.nome.toLowerCase()));
+        else m.notas.forEach(n => rot.appendChild(el('em', n.startsWith('−') ? 'menos' : '', n)));
+        lb.appendChild(rot); const barra = el('span', 'barra'); const fill = el('i'); fill.style.setProperty('--v', v + '%'); barra.appendChild(fill); lb.appendChild(barra); b.appendChild(lb);
+        b.appendChild(el('b', null, v));
+        if (opts.escolher && !m.bloqueado) b.onclick = () => opts.aoEscolher(i);
         ps.appendChild(b);
       });
       m.appendChild(ps);
@@ -244,6 +305,7 @@
     }
     function passar() {
       if (!montes[0].length || !montes[1].length) return fim();
+      sortearClima(); mostrarClima();
       placar('placarMao'); $('maoNome').textContent = nomes[vez]; tela('mao');
     }
     function escolher() {
@@ -259,12 +321,13 @@
       if (pb === 'alfa' && pa === 'terror') return [0, 'O Pequeno Terror é a única carta que vence o Alfa!'];
       if (pa === 'alfa') return [0, 'O Alfa vence qualquer carta.'];
       if (pb === 'alfa') return [1, 'O Alfa vence qualquer carta.'];
-      const va = a.poderes[poder], vb = b.poderes[poder];
+      const va = valor(a, poder), vb = valor(b, poder);
       if (va === vb) return [-1, PODERES[poder] + ' ' + va + ' contra ' + vb + ': empate.'];
       return [va > vb ? 0 : 1, PODERES[poder] + ': ' + Math.max(va, vb) + ' contra ' + Math.min(va, vb) + '.'];
     }
     let pendente = null;
     function disputar(poder) {
+      if (clima && clima.bloqueia === poder) return;
       const a = montes[0][0], b = montes[1][0];
       const [v, motivo] = decidir(a, b, poder);
       rodada++;
@@ -281,8 +344,9 @@
       tela('revela');
     }
     function continuar() {
-      const { v } = pendente; pendente = null;
+      const { v, poder } = pendente; pendente = null;
       const a = montes[0].shift(), b = montes[1].shift();
+      if (v >= 0 && opcoes.cansaco) { const venc = v === 0 ? a : b; venc.cansaco[poder] += 10; }
       if (v < 0) { meio.push(a, b); }
       else { montes[v].push(...embaralha([a, b].concat(meio))); meio = []; vez = v; }
       passar();
@@ -300,7 +364,11 @@
     $('continuar').onclick = continuar;
     $('encerrar').onclick = () => { if (pendente) { continuar(); } fim(true); };
     $('denovo').onclick = () => tela('inicio');
-    window.__duelo = { get: () => ({ montes: montes.map(m => m.map(c => c.nome)), meio: meio.map(c => c.nome), vez, rodada }), decidir, comecar, escolher, disputar, continuar,
+    window.__duelo = { get: () => ({ montes: montes.map(m => m.map(c => c.nome)), meio: meio.map(c => c.nome), vez, rodada, clima: clima && clima.nome, opcoes: { ...opcoes } }), decidir, comecar, escolher, disputar, continuar, valor, modificadores, CLIMAS,
+      // só para teste: a carta viva pelo nome (com o cansaço acumulado)
+      carta: n => montes[0].concat(montes[1], meio).find(c => c.nome === n),
+      // só para teste: fixa o clima pelo índice (null = sem clima) e redesenha
+      setClima: i => { clima = i == null ? null : CLIMAS[i]; mostrarClima(); },
       // só para teste: põe duas cartas, pelo nome, no topo dos dois montes
       topo: (a, b) => { const tudo = montes[0].concat(montes[1]); const ca = tudo.find(c => c.nome === a), cb = tudo.find(c => c.nome === b); const resto = tudo.filter(c => c !== ca && c !== cb); montes[0].splice(0, montes[0].length, ca, ...resto.slice(0, 11)); montes[1].splice(0, montes[1].length, cb, ...resto.slice(11)); vez = 0; } };
   })();
