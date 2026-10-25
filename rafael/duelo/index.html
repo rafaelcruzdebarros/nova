@@ -28,6 +28,16 @@
     .campo label { font-size: 13px; color: var(--muted); font-weight: 700; }
     .campo input { font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
     .campo input:focus { outline: 2px solid var(--fogo); outline-offset: 1px; }
+    .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--surface); }
+    .seg button { background: transparent; color: var(--muted); border: 0; padding: 9px 14px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .seg button.on { background: var(--fogo); color: var(--noite); }
+    .centro { text-align: center; }
+    .codigo { font-family: "Chakra Petch", sans-serif; font-size: clamp(40px, 12vw, 56px); letter-spacing: .3em; text-indent: .3em; color: var(--sol); margin: 8px 0 4px; }
+    #codigo { font: inherit; font-family: "Chakra Petch", sans-serif; font-size: 20px; letter-spacing: .2em; text-transform: uppercase; width: 6.5em; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 9px 12px; }
+    #codigo:focus { outline: 2px solid var(--fogo); outline-offset: 1px; }
+    .espera { color: var(--muted); font-size: 14px; }
+    .espera::after { content: "…"; animation: pontos 1.4s steps(4) infinite; }
+    @keyframes pontos { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
     .opcoes { display: grid; gap: 8px; margin: 14px 0; }
     .opc { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; }
     .opc input { width: 20px; height: 20px; accent-color: var(--fogo); grid-row: span 2; margin: 0; }
@@ -112,8 +122,9 @@
       <section class="scr on" id="inicio">
         <h2>Duelo de Dragões</h2>
         <p class="lead">Jogo de cartas para duas pessoas no mesmo aparelho. Cada um só vê a própria carta de cima. Quem tem a vez escolhe um poder, e o número maior vence a rodada.</p>
-        <div class="campo"><label for="n1">Jogador 1</label><input id="n1" maxlength="16" placeholder="Nome ou apelido"></div>
-        <div class="campo"><label for="n2">Jogador 2</label><input id="n2" maxlength="16" placeholder="Nome ou apelido"></div>
+        <div class="linha"><div class="seg" id="modo"><button type="button" data-m="local" class="on">Mesmo aparelho</button><button type="button" data-m="online">Cada um no seu celular</button></div></div>
+        <div class="campo"><label for="n1" id="n1Rotulo">Jogador 1</label><input id="n1" maxlength="16" placeholder="Nome ou apelido"></div>
+        <div class="campo" id="campoN2"><label for="n2">Jogador 2</label><input id="n2" maxlength="16" placeholder="Nome ou apelido"></div>
         <div class="linha">
           <div class="seg" id="tamanho"><button type="button" data-n="24" class="on">Baralho inteiro · 24</button><button type="button" data-n="12">Rápido · 12</button></div>
         </div>
@@ -121,7 +132,11 @@
           <label class="opc"><input type="checkbox" id="optClima" checked><b>☔ Clima da rodada</b><span>A cada rodada um clima muda alguns poderes, por classe de dragão. Os dois veem o clima antes da escolha.</span></label>
           <label class="opc"><input type="checkbox" id="optCansaco" checked><b>😮‍💨 Cansaço</b><span>O poder que venceu uma rodada perde 10 pontos naquela carta até o fim da partida.</span></label>
         </div>
-        <div class="linha"><button class="btn c grande" id="comecar">Começar</button></div>
+        <div class="linha" id="linhaComecar"><button class="btn c grande" id="comecar">Começar</button></div>
+        <div id="online" hidden>
+          <div class="linha"><button class="btn c grande" id="criarSala">Criar sala</button><span class="nota">ou entre numa:</span><input id="codigo" maxlength="4" placeholder="CÓDIGO" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="btn" id="entrarSala">Entrar</button></div>
+          <p class="nota">Quem cria a sala escolhe o baralho e as opções acima e recebe um código de 4 letras. O outro digita o código no celular dele. Cada um vê só a própria carta.</p>
+        </div>
         <details>
           <summary>Regras</summary>
           <ol>
@@ -133,9 +148,21 @@
             <li>Dica: cada poder tem a própria escala. Um 70 de Fogo é comum, um 70 de Tamanho é raro. Quem conhece o baralho escolhe melhor.</li>
             <li>Com o <b>Clima da rodada</b> ligado, cada rodada sorteia um clima que soma ou tira pontos de alguns poderes conforme a classe do dragão, ou proíbe um poder. O clima aparece para os dois antes da escolha, e a carta mostra o valor já ajustado.</li>
             <li>Com o <b>Cansaço</b> ligado, o poder que venceu perde 10 pontos naquela carta até o fim da partida. Repetir o mesmo truque cansa.</li>
+            <li><b>Cada um no seu celular</b>: um cria a sala e manda o código (ou o link) para o outro. A partida roda no celular de quem criou; o outro precisa de internet durante o jogo todo. Se a conexão cair, a partida acaba.</li>
             <li>Vence quem ficar com todas as cartas. Também dá para encerrar a qualquer momento: vence quem tiver mais.</li>
           </ol>
         </details>
+      </section>
+
+      <!-- sala online: código e espera -->
+      <section class="scr" id="sala">
+        <div class="centro">
+          <p class="nota" id="salaTitulo">Sala criada</p>
+          <div class="codigo" id="salaCodigo"></div>
+          <p class="lead" id="salaTexto" style="margin-left: auto; margin-right: auto"></p>
+          <p class="espera" id="salaEspera"></p>
+          <div class="linha" style="justify-content: center"><button class="btn" id="compartilhar">Compartilhar o link</button><button class="btn ghost" id="sairSala">Voltar</button></div>
+        </div>
       </section>
 
       <!-- passar o aparelho -->
@@ -156,7 +183,7 @@
         <div class="clima" id="climaEscolha"></div>
         <p class="dono" id="escolhaDono"></p>
         <div id="cartaEscolha"></div>
-        <p class="centro nota" style="margin-top: 14px">Toque no poder que vai disputar esta rodada.</p>
+        <p class="centro nota" id="escolhaNota" style="margin-top: 14px">Toque no poder que vai disputar esta rodada.</p>
       </section>
 
       <!-- resultado -->
@@ -169,6 +196,7 @@
         </div>
         <div class="resultado" id="resultado"></div>
         <p class="motivo" id="motivo"></p>
+        <p class="centro espera" id="revelaEspera" hidden></p>
         <div class="linha centro" style="justify-content: center"><button class="btn c grande" id="continuar">Continuar</button><button class="btn ghost" id="encerrar">Encerrar partida</button></div>
       </section>
 
@@ -197,11 +225,15 @@
     const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
     const SIMB = { Fogo: '🔥', 'Maré': '🌊', Pedra: '🪨', Raio: '⚡', Noite: '🌙' };
     const CLS = { Fogo: 'fogo', 'Maré': 'mare', Pedra: 'pedra', Raio: 'raio', Noite: 'noite' };
-    const TELAS = ['inicio', 'mao', 'escolha', 'revela', 'fim'];
+    const TELAS = ['inicio', 'sala', 'mao', 'escolha', 'revela', 'fim'];
     function tela(id) { TELAS.forEach(t => $(t).classList.toggle('on', t === id)); window.scrollTo(0, 0); }
 
     // ---------- estado ----------
     let nomes, montes, meio, vez, rodada, tamanho = 24, baralho;
+    // modo: 'local' (os dois no mesmo aparelho), 'host' (criou a sala: a partida roda aqui) ou 'convidado' (só vê e escolhe)
+    let modo = 'local', eu = 0, fase = 'inicio', fimInfo = null, rede = null, codigoSala = '';
+    // o convidado não tem os montes: guarda o que o host mandou
+    let espelho = { n: [0, 0], meio: 0 };
     // Clima da rodada: cada efeito é [classe ou null (todas), índice do poder, pontos]; bloqueia é um poder que não pode ser escolhido.
     const CLIMAS = [
       { nome: 'Chuva', ic: '☔', texto: 'Dragões de Fogo perdem 15 de Fogo. Dragões da Maré ganham 10 de Velocidade.', efeitos: [['Fogo', 0, -15], ['Maré', 1, 10]] },
@@ -242,7 +274,11 @@
     function valor(c, i, mods) { return Math.max(1, c.poderes[i] + (mods || modificadores(c))[i].delta); }
     function embaralha(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
     function comecar() {
+      modo = 'local'; eu = 0;
       nomes = [$('n1').value.trim() || 'Jogador 1', $('n2').value.trim() || 'Jogador 2'];
+      iniciarPartida();
+    }
+    function iniciarPartida() {
       opcoes.clima = $('optClima').checked; opcoes.cansaco = $('optCansaco').checked;
       baralho = CARTAS.map((c, i) => ({ ...c, num: i + 1, cansaco: [0, 0, 0, 0, 0] }));
       let cartas = embaralha(baralho.slice());
@@ -255,11 +291,12 @@
       meio = []; vez = Math.floor(Math.random() * 2); rodada = 0;
       passar();
     }
+    function contagem() { return modo === 'convidado' ? espelho : { n: [montes[0].length, montes[1].length], meio: meio.length }; }
     function placar(id) {
-      const p = $(id); p.innerHTML = '';
-      p.appendChild(el('span', null, nomes[0] + ': ')).appendChild(el('b', null, montes[0].length));
-      p.appendChild(el('span', 'meio', 'rodada ' + (rodada + 1) + (meio.length ? ' · ' + meio.length + ' no meio' : '')));
-      p.appendChild(el('span', null, nomes[1] + ': ')).appendChild(el('b', null, montes[1].length));
+      const p = $(id), c = contagem(); p.innerHTML = '';
+      p.appendChild(el('span', null, nomes[0] + ': ')).appendChild(el('b', null, c.n[0]));
+      p.appendChild(el('span', 'meio', 'rodada ' + (rodada + 1) + (c.meio ? ' · ' + c.meio + ' no meio' : '')));
+      p.appendChild(el('span', null, nomes[1] + ': ')).appendChild(el('b', null, c.n[1]));
     }
     const SUB = { Fogo: 'Dragão de fogo', 'Maré': 'Dragão da maré', Pedra: 'Dragão de pedra', Raio: 'Dragão do raio', Noite: 'Dragão da noite' };
     const ICONE = ['🔥', '⚡', '💪', '📏', '🧠'];
@@ -305,14 +342,22 @@
     }
     function passar() {
       if (!montes[0].length || !montes[1].length) return fim();
-      sortearClima(); mostrarClima();
-      placar('placarMao'); $('maoNome').textContent = nomes[vez]; tela('mao');
+      sortearClima(); mostrarClima(); fase = 'escolha'; pendente = null;
+      if (modo === 'local') { placar('placarMao'); $('maoNome').textContent = nomes[vez]; tela('mao'); return; }
+      // online: cada um vê a própria carta; quem tem a vez escolhe, o outro espera
+      renderEscolha(montes[eu][0], vez === eu); enviarEstado();
     }
-    function escolher() {
-      placar('placarEscolha'); $('escolhaDono').textContent = 'Carta de ' + nomes[vez];
-      const box = $('cartaEscolha'); box.innerHTML = ''; box.appendChild(cartaEl(montes[vez][0], { escolher: true, aoEscolher: disputar }));
+    // a tela da carta de cima: com os poderes clicáveis (minha vez) ou só para olhar (vez do outro)
+    function renderEscolha(carta, posso) {
+      placar('placarEscolha');
+      const outro = nomes[1 - eu];
+      $('escolhaDono').textContent = modo === 'local' ? 'Carta de ' + nomes[vez] : (posso ? 'Sua carta · sua vez' : 'Sua carta · vez de ' + outro);
+      $('escolhaNota').textContent = posso ? 'Toque no poder que vai disputar esta rodada.' : outro + ' está escolhendo o poder. Espere a revelação.';
+      const box = $('cartaEscolha'); box.innerHTML = ''; box.appendChild(cartaEl(carta, posso ? { escolher: true, aoEscolher: escolhaFeita } : {}));
       tela('escolha');
     }
+    function escolhaFeita(poder) { if (modo === 'convidado') { rede && rede.enviar({ tipo: 'escolha', poder }); return; } disputar(poder); }
+    function escolher() { renderEscolha(montes[vez][0], true); }
     // Quem vence: Alfa ganha de tudo menos do Terror; Terror só ganha do Alfa; senão, o número do poder.
     // Devolve 0 ou 1 (índice do vencedor) ou -1 para empate, e o motivo em texto.
     function decidir(a, b, poder) {
@@ -327,23 +372,34 @@
     }
     let pendente = null;
     function disputar(poder) {
-      if (clima && clima.bloqueia === poder) return;
+      if (fase !== 'escolha' || (clima && clima.bloqueia === poder)) return;
       const a = montes[0][0], b = montes[1][0];
       const [v, motivo] = decidir(a, b, poder);
       rodada++;
+      pendente = { v, poder, motivo }; fase = 'revela';
+      renderRevela({ a, b, poder, v, motivo });
+      if (modo === 'host') enviarEstado();
+    }
+    // quem aperta Continuar: quem venceu (ou, no empate, quem escolheu) — no modo local, qualquer um
+    function quemContinua(v) { return v < 0 ? vez : v; }
+    function renderRevela(r) {
       placar('placarRevela');
       $('dono1').textContent = nomes[0]; $('dono2').textContent = nomes[1];
-      const c1 = cartaEl(a, { marcado: poder }), c2 = cartaEl(b, { marcado: poder });
-      if (v === 0) { c1.classList.add('vencedora'); c2.classList.add('perdedora'); }
-      if (v === 1) { c2.classList.add('vencedora'); c1.classList.add('perdedora'); }
+      const c1 = cartaEl(r.a, { marcado: r.poder }), c2 = cartaEl(r.b, { marcado: r.poder });
+      if (r.v === 0) { c1.classList.add('vencedora'); c2.classList.add('perdedora'); }
+      if (r.v === 1) { c2.classList.add('vencedora'); c1.classList.add('perdedora'); }
       $('carta1').innerHTML = ''; $('carta1').appendChild(c1); $('carta2').innerHTML = ''; $('carta2').appendChild(c2);
-      const r = $('resultado');
-      if (v < 0) { r.textContent = 'Empate!'; r.className = 'resultado'; $('motivo').textContent = motivo + ' As cartas ficam no meio e ' + nomes[vez] + ' escolhe de novo.'; }
-      else { r.textContent = nomes[v] + ' venceu a rodada'; r.className = 'resultado ok'; $('motivo').textContent = motivo; }
-      pendente = { v, poder };
+      const res = $('resultado');
+      if (r.v < 0) { res.textContent = 'Empate!'; res.className = 'resultado'; $('motivo').textContent = r.motivo + ' As cartas ficam no meio e ' + nomes[vez] + ' escolhe de novo.'; }
+      else { res.textContent = nomes[r.v] + ' venceu a rodada'; res.className = 'resultado ok'; $('motivo').textContent = r.motivo; }
+      const minha = modo === 'local' || quemContinua(r.v) === eu;
+      $('continuar').hidden = !minha; $('revelaEspera').hidden = minha;
+      if (!minha) $('revelaEspera').textContent = 'Esperando ' + nomes[quemContinua(r.v)] + ' continuar';
       tela('revela');
     }
     function continuar() {
+      if (modo === 'convidado') { rede && rede.enviar({ tipo: 'continuar' }); return; }
+      if (!pendente) return;
       const { v, poder } = pendente; pendente = null;
       const a = montes[0].shift(), b = montes[1].shift();
       if (v >= 0 && opcoes.cansaco) { const venc = v === 0 ? a : b; venc.cansaco[poder] += 10; }
@@ -352,19 +408,171 @@
       passar();
     }
     function fim(encerrado) {
-      const n0 = montes[0].length + (meio.length && !encerrado ? 0 : 0), n1 = montes[1].length;
-      let venc = n0 === n1 ? -1 : n0 > n1 ? 0 : 1;
-      $('fimTitulo').textContent = venc < 0 ? 'Empate!' : nomes[venc] + ' venceu!';
-      $('fimTexto').textContent = (encerrado ? 'Partida encerrada em ' : 'Fim de jogo em ') + rodada + (rodada === 1 ? ' rodada. ' : ' rodadas. ') + nomes[0] + ' ficou com ' + n0 + (n0 === 1 ? ' carta' : ' cartas') + ' e ' + nomes[1] + ' com ' + n1 + (n1 === 1 ? ' carta.' : ' cartas.');
-      tela('fim');
+      if (modo === 'convidado') { rede && rede.enviar({ tipo: 'encerrar' }); return; }
+      const n0 = montes[0].length, n1 = montes[1].length;
+      const venc = n0 === n1 ? -1 : n0 > n1 ? 0 : 1;
+      fimInfo = { venc, texto: (encerrado ? 'Partida encerrada em ' : 'Fim de jogo em ') + rodada + (rodada === 1 ? ' rodada. ' : ' rodadas. ') + nomes[0] + ' ficou com ' + n0 + (n0 === 1 ? ' carta' : ' cartas') + ' e ' + nomes[1] + ' com ' + n1 + (n1 === 1 ? ' carta.' : ' cartas.') };
+      fase = 'fim'; renderFim(fimInfo);
+      if (modo === 'host') enviarEstado();
     }
+    function renderFim(f) { $('fimTitulo').textContent = f.venc < 0 ? 'Empate!' : nomes[f.venc] + ' venceu!'; $('fimTexto').textContent = f.texto; tela('fim'); }
+
+    // ---------- dois celulares: sala, rede e espelho ----------
+    // A partida inteira roda no celular de quem criou a sala (host). O convidado recebe um retrato
+    // do que ele pode ver (a própria carta, o placar, o clima, a revelação) e manda só as ações:
+    // a escolha do poder, continuar e encerrar. Quem decide tudo é o host.
+    const SALA_PREFIXO = 'duelo-3dbarros-';
+    const ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem 0/O e 1/I, para ditar o código sem confusão
+    const novoCodigo = () => Array.from({ length: 4 }, () => ALFABETO[Math.floor(Math.random() * ALFABETO.length)]).join('');
+    const params = new URLSearchParams(location.search);
+    const canalLocal = params.get('canal') === 'local'; // só para teste: duas abas do mesmo navegador, sem internet
+    function carregarPeer() {
+      return new Promise((ok, falha) => {
+        if (canalLocal || window.Peer) return ok();
+        const sc = document.createElement('script'); sc.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+        sc.onload = ok; sc.onerror = () => falha(new Error('Não consegui carregar a parte de conexão. Confira a internet e tente de novo.'));
+        document.head.appendChild(sc);
+      });
+    }
+    // Transporte real: ligação direta entre os dois celulares (WebRTC), com o servidor público do PeerJS
+    // só para apresentar um ao outro. O id da sala é o código.
+    function redePeer(papel, codigo, cb) {
+      const id = SALA_PREFIXO + codigo.toLowerCase();
+      const peer = papel === 'host' ? new Peer(id, { debug: 0 }) : new Peer({ debug: 0 });
+      let conn = null, aberta = false;
+      const liga = c => {
+        if (conn) { try { c.close(); } catch (e) {} return; }
+        conn = c;
+        c.on('open', () => { aberta = true; cb.abriu(); });
+        c.on('data', d => cb.mensagem(d));
+        c.on('close', () => { if (aberta) cb.fechou('A conexão com o outro celular caiu.'); });
+        c.on('error', () => cb.fechou('Deu erro na conexão com o outro celular.'));
+      };
+      peer.on('open', () => {
+        if (papel === 'host') cb.pronto();
+        else liga(peer.connect(id, { reliable: true, serialization: 'json' }));
+      });
+      if (papel === 'host') peer.on('connection', liga);
+      peer.on('error', e => {
+        const t = e && e.type;
+        if (t === 'unavailable-id') return cb.erro('codigo-em-uso');
+        if (t === 'peer-unavailable') return cb.erro('Não achei essa sala. Confira o código: ele vale enquanto quem criou estiver com o jogo aberto.');
+        if (t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed') return cb.erro('Não consegui falar com o servidor de conexão. Confira a internet e tente de novo.');
+        if (t === 'browser-incompatible') return cb.erro('Este navegador não consegue fazer a conexão direta. Tente o Chrome ou o Safari.');
+        cb.erro('Erro de conexão (' + (t || 'desconhecido') + ').');
+      });
+      peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+      return { enviar: o => { if (conn && conn.open) conn.send(o); }, fechar: () => { try { peer.destroy(); } catch (e) {} } };
+    }
+    // Transporte de teste: BroadcastChannel entre duas abas do mesmo navegador (?canal=local).
+    function redeLocal(papel, codigo, cb) {
+      const bc = new BroadcastChannel('duelo-' + codigo.toUpperCase()), outro = papel === 'host' ? 'convidado' : 'host';
+      bc.onmessage = ev => { const m = ev.data; if (!m || m.para !== papel) return;
+        if (m.tipo === '_oi') { if (papel === 'host') bc.postMessage({ para: 'convidado', tipo: '_oi' }); cb.abriu(); }
+        else if (m.tipo === '_tchau') cb.fechou('A conexão com o outro celular caiu.');
+        else cb.mensagem(m.corpo); };
+      setTimeout(() => { cb.pronto(); if (papel === 'convidado') bc.postMessage({ para: 'host', tipo: '_oi' }); }, 20);
+      return { enviar: o => bc.postMessage({ para: outro, tipo: 'm', corpo: JSON.parse(JSON.stringify(o)) }), fechar: () => { try { bc.postMessage({ para: outro, tipo: '_tchau' }); bc.close(); } catch (e) {} } };
+    }
+    const abrirRede = (papel, codigo, cb) => canalLocal ? redeLocal(papel, codigo, cb) : redePeer(papel, codigo, cb);
+    function telaSala(titulo, codigo, texto, espera) {
+      $('salaTitulo').textContent = titulo; $('salaCodigo').textContent = codigo || ''; $('salaCodigo').hidden = !codigo;
+      $('salaTexto').textContent = texto || ''; $('salaEspera').textContent = espera || ''; $('salaEspera').hidden = !espera;
+      $('compartilhar').hidden = !codigo; tela('sala');
+    }
+    function fecharRede() { if (rede) { try { rede.fechar(); } catch (e) {} rede = null; } }
+    function linkDaSala() { return location.origin + location.pathname + '?sala=' + codigoSala; }
+    // host: cria a sala e espera o outro
+    async function criarSala(codigoFixo) {
+      const nome = $('n1').value.trim() || 'Jogador 1';
+      try { await carregarPeer(); } catch (e) { telaSala('Não deu', '', e.message, ''); return; }
+      modo = 'host'; eu = 0; fase = 'sala'; fecharRede();
+      let tentativas = 0;
+      const abrir = () => {
+        codigoSala = codigoFixo || novoCodigo();
+        telaSala('Sala criada', codigoSala, 'Fale esse código para quem vai jogar com você, ou mande o link. A sala vale enquanto esta tela estiver aberta.', 'Esperando o outro jogador entrar');
+        rede = abrirRede('host', codigoSala, {
+          pronto: () => {},
+          abriu: () => { $('salaEspera').textContent = 'Conectado! Esperando o nome'; },
+          mensagem: m => receberDoConvidado(m),
+          fechou: motivo => caiu(motivo),
+          erro: e => { if (e === 'codigo-em-uso' && !codigoFixo && tentativas++ < 5) { fecharRede(); abrir(); } else telaSala('Não deu', '', typeof e === 'string' ? e : 'Erro ao criar a sala.', ''); }
+        });
+      };
+      abrir();
+    }
+    // convidado: entra pelo código
+    async function entrarSala(codigo) {
+      codigo = (codigo || '').trim().toUpperCase();
+      if (codigo.length !== 4) { $('codigo').focus(); return; }
+      const nome = $('n1').value.trim() || 'Jogador 2';
+      try { await carregarPeer(); } catch (e) { telaSala('Não deu', '', e.message, ''); return; }
+      modo = 'convidado'; eu = 1; fase = 'sala'; codigoSala = codigo; fecharRede();
+      telaSala('Entrando na sala', codigo, '', 'Procurando a sala');
+      let entrou = false;
+      const prazo = setTimeout(() => { if (!entrou) { fecharRede(); telaSala('Não deu', '', 'A sala não respondeu. Confira o código e se quem criou ainda está com o jogo aberto.', ''); } }, 20000);
+      rede = abrirRede('convidado', codigo, {
+        pronto: () => {},
+        abriu: () => { entrou = true; clearTimeout(prazo); $('salaEspera').textContent = 'Conectado! Esperando a partida começar'; rede.enviar({ tipo: 'oi', nome }); },
+        mensagem: m => receberDoHost(m),
+        fechou: motivo => caiu(motivo),
+        erro: e => { clearTimeout(prazo); fecharRede(); telaSala('Não deu', '', typeof e === 'string' ? e : 'Erro ao entrar na sala.', ''); }
+      });
+    }
+    function caiu(motivo) {
+      fecharRede();
+      if (fase === 'fim' || fase === 'inicio') return;
+      fase = 'inicio';
+      telaSala('Conexão perdida', '', (motivo || 'A conexão caiu.') + ' A partida acabou por aqui; é só criar outra sala.', '');
+    }
+    // o retrato que o convidado recebe: nunca a carta do host nem os montes
+    function estadoParaConvidado() {
+      return { tipo: 'estado', fase, nomes, placar: [montes[0].length, montes[1].length], meio: meio.length, rodada, vez,
+        clima: clima ? CLIMAS.indexOf(clima) : null, opcoes: { ...opcoes }, carta: montes[1][0] || null,
+        revela: fase === 'revela' && pendente ? { a: montes[0][0], b: montes[1][0], poder: pendente.poder, v: pendente.v, motivo: pendente.motivo } : null,
+        fim: fase === 'fim' ? fimInfo : null };
+    }
+    function enviarEstado() { if (modo === 'host' && rede) rede.enviar(estadoParaConvidado()); }
+    function receberDoConvidado(m) {
+      if (!m || typeof m !== 'object') return;
+      if (m.tipo === 'oi' && fase === 'sala') { nomes = [$('n1').value.trim() || 'Jogador 1', String(m.nome || 'Jogador 2').slice(0, 16)]; iniciarPartida(); return; }
+      if (m.tipo === 'escolha' && fase === 'escolha' && vez === 1 && Number.isInteger(m.poder) && m.poder >= 0 && m.poder < PODERES.length) { disputar(m.poder); return; }
+      if (m.tipo === 'continuar' && fase === 'revela' && pendente && quemContinua(pendente.v) === 1) { continuar(); return; }
+      if (m.tipo === 'encerrar' && (fase === 'escolha' || fase === 'revela')) { if (pendente) continuar(); if (fase !== 'fim') fim(true); }
+    }
+    function receberDoHost(m) {
+      if (!m || m.tipo !== 'estado') return;
+      nomes = m.nomes; espelho = { n: m.placar, meio: m.meio }; rodada = m.rodada; vez = m.vez; fase = m.fase;
+      opcoes.clima = !!m.opcoes.clima; opcoes.cansaco = !!m.opcoes.cansaco;
+      clima = m.clima == null ? null : CLIMAS[m.clima]; mostrarClima();
+      if (m.fase === 'escolha' && m.carta) renderEscolha(m.carta, m.vez === 1);
+      else if (m.fase === 'revela' && m.revela) renderRevela(m.revela);
+      else if (m.fase === 'fim' && m.fim) { fimInfo = m.fim; renderFim(m.fim); }
+    }
+    function modoInicio(m) {
+      const online = m === 'online';
+      $('modo').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.m === m));
+      $('campoN2').hidden = online; $('online').hidden = !online; $('linhaComecar').hidden = online;
+      $('n1Rotulo').textContent = online ? 'Seu nome' : 'Jogador 1';
+    }
+    $('modo').querySelectorAll('button').forEach(b => b.onclick = () => modoInicio(b.dataset.m));
+    $('criarSala').onclick = () => criarSala();
+    $('entrarSala').onclick = () => entrarSala($('codigo').value);
+    $('codigo').addEventListener('keydown', e => { if (e.key === 'Enter') entrarSala($('codigo').value); });
+    $('sairSala').onclick = () => { fecharRede(); fase = 'inicio'; modo = 'local'; tela('inicio'); };
+    $('compartilhar').onclick = async () => {
+      const link = linkDaSala(), texto = 'Vem jogar Duelo de Dragões comigo! Código da sala: ' + codigoSala;
+      try { if (navigator.share) { await navigator.share({ title: 'Duelo de Dragões', text: texto, url: link }); return; } } catch (e) { return; }
+      try { await navigator.clipboard.writeText(texto + ' ' + link); $('compartilhar').textContent = 'Link copiado!'; } catch (e) { prompt('Copie o link:', link); }
+    };
+    if (params.get('sala')) { modoInicio('online'); $('codigo').value = params.get('sala').toUpperCase().slice(0, 4); }
     $('tamanho').querySelectorAll('button').forEach(b => b.onclick = () => { $('tamanho').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); tamanho = +b.dataset.n; });
     $('comecar').onclick = comecar;
     $('verCarta').onclick = escolher;
     $('continuar').onclick = continuar;
-    $('encerrar').onclick = () => { if (pendente) { continuar(); } fim(true); };
-    $('denovo').onclick = () => tela('inicio');
-    window.__duelo = { get: () => ({ montes: montes.map(m => m.map(c => c.nome)), meio: meio.map(c => c.nome), vez, rodada, clima: clima && clima.nome, opcoes: { ...opcoes } }), decidir, comecar, escolher, disputar, continuar, valor, modificadores, CLIMAS,
+    $('encerrar').onclick = () => { if (modo === 'convidado') { fim(true); return; } if (pendente) { continuar(); } if (fase !== 'fim') fim(true); };
+    $('denovo').onclick = () => { fecharRede(); fase = 'inicio'; modo = 'local'; tela('inicio'); };
+    window.__duelo = { get: () => ({ montes: modo === 'convidado' ? [] : montes.map(m => m.map(c => c.nome)), meio: modo === 'convidado' ? [] : meio.map(c => c.nome), vez, rodada, clima: clima && clima.nome, opcoes: { ...opcoes }, modo, eu, fase, espelho: { ...espelho } }), decidir, comecar, escolher, disputar, continuar, valor, modificadores, CLIMAS, criarSala, entrarSala,
       // só para teste: a carta viva pelo nome (com o cansaço acumulado)
       carta: n => montes[0].concat(montes[1], meio).find(c => c.nome === n),
       // só para teste: fixa o clima pelo índice (null = sem clima) e redesenha
