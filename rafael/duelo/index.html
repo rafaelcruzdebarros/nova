@@ -448,20 +448,21 @@
         c.on('open', () => { aberta = true; cb.abriu(); });
         c.on('data', d => cb.mensagem(d));
         c.on('close', () => { if (aberta) cb.fechou('A conexão com o outro celular caiu.'); });
-        c.on('error', () => cb.fechou('Deu erro na conexão com o outro celular.'));
+        c.on('error', e => cb.fechou('Deu erro na conexão com o outro celular. [detalhe técnico: ' + (e && e.message ? String(e.message).slice(0, 160) : '?') + ']'));
       };
       peer.on('open', () => {
-        if (papel === 'host') cb.pronto();
-        else liga(peer.connect(id, { reliable: true, serialization: 'json' }));
+        cb.pronto();
+        if (papel !== 'host') liga(peer.connect(id, { reliable: true, serialization: 'json' }));
       });
       if (papel === 'host') peer.on('connection', liga);
       peer.on('error', e => {
-        const t = e && e.type;
+        const t = e && e.type, det = ' [detalhe técnico: ' + (t || '?') + (e && e.message ? ' · ' + String(e.message).slice(0, 160) : '') + ']';
         if (t === 'unavailable-id') return cb.erro('codigo-em-uso');
-        if (t === 'peer-unavailable') return cb.erro('Não achei essa sala. Confira o código: ele vale enquanto quem criou estiver com o jogo aberto.');
-        if (t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed') return cb.erro('Não consegui falar com o servidor de conexão. Confira a internet e tente de novo.');
-        if (t === 'browser-incompatible') return cb.erro('Este navegador não consegue fazer a conexão direta. Tente o Chrome ou o Safari.');
-        cb.erro('Erro de conexão (' + (t || 'desconhecido') + ').');
+        if (t === 'peer-unavailable') return cb.erro('O servidor não achou essa sala. Confira o código e se quem criou ainda está com a tela da sala aberta e com "Sala registrada" escrito nela.' + det);
+        if (t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed') return cb.erro('Não consegui falar com o servidor de apresentação (0.peerjs.com). Pode ser a internet, ou o servidor fora do ar.' + det);
+        if (t === 'browser-incompatible') return cb.erro('Este navegador não consegue fazer a conexão direta. Tente o Chrome ou o Safari.' + det);
+        if (t === 'webrtc') return cb.erro('A ligação direta entre os dois celulares falhou.' + det);
+        cb.erro('Erro de conexão.' + det);
       });
       peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
       return { enviar: o => { if (conn && conn.open) conn.send(o); }, fechar: () => { try { peer.destroy(); } catch (e) {} } };
@@ -492,9 +493,9 @@
       let tentativas = 0;
       const abrir = () => {
         codigoSala = codigoFixo || novoCodigo();
-        telaSala('Sala criada', codigoSala, 'Fale esse código para quem vai jogar com você, ou mande o link. A sala vale enquanto esta tela estiver aberta.', 'Esperando o outro jogador entrar');
+        telaSala('Sala criada', codigoSala, 'Fale esse código para quem vai jogar com você, ou mande o link. A sala vale enquanto esta tela estiver aberta.', 'Registrando a sala no servidor');
         rede = abrirRede('host', codigoSala, {
-          pronto: () => {},
+          pronto: () => { $('salaEspera').textContent = 'Sala registrada. Esperando o outro jogador entrar'; },
           abriu: () => { $('salaEspera').textContent = 'Conectado! Esperando o nome'; },
           mensagem: m => receberDoConvidado(m),
           fechou: motivo => caiu(motivo),
@@ -510,11 +511,14 @@
       const nome = $('n1').value.trim() || 'Jogador 2';
       try { await carregarPeer(); } catch (e) { telaSala('Não deu', '', e.message, ''); return; }
       modo = 'convidado'; eu = 1; fase = 'sala'; codigoSala = codigo; fecharRede();
-      telaSala('Entrando na sala', codigo, '', 'Procurando a sala');
-      let entrou = false;
-      const prazo = setTimeout(() => { if (!entrou) { fecharRede(); telaSala('Não deu', '', 'A sala não respondeu. Confira o código e se quem criou ainda está com o jogo aberto.', ''); } }, 20000);
+      telaSala('Entrando na sala', codigo, '', 'Falando com o servidor de apresentação');
+      let entrou = false, etapa = 'servidor';
+      const prazo = setTimeout(() => { if (entrou) return; fecharRede();
+        telaSala('Não deu', '', etapa === 'servidor'
+          ? 'O servidor de apresentação (0.peerjs.com) não respondeu em 40 segundos. Pode ser a internet deste celular, ou o servidor fora do ar.'
+          : 'O servidor respondeu, mas a ligação direta entre os dois celulares não abriu em 40 segundos. Isso costuma ser a rede no meio do caminho: Wi-Fi com isolamento entre aparelhos, ou operadora de celular. Tente os dois no mesmo Wi-Fi, ou um deles no 4G.', ''); }, 40000);
       rede = abrirRede('convidado', codigo, {
-        pronto: () => {},
+        pronto: () => { etapa = 'sala'; $('salaEspera').textContent = 'Servidor respondeu. Procurando a sala e abrindo a ligação direta'; },
         abriu: () => { entrou = true; clearTimeout(prazo); $('salaEspera').textContent = 'Conectado! Esperando a partida começar'; rede.enviar({ tipo: 'oi', nome }); },
         mensagem: m => receberDoHost(m),
         fechou: motivo => caiu(motivo),
