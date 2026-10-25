@@ -429,13 +429,15 @@
     function carregarPeer() {
       return new Promise((ok, falha) => {
         if (canalLocal || window.Peer) return ok();
-        const sc = document.createElement('script'); sc.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+        // a biblioteca é servida pelo próprio site (vendor/), não por CDN: nada de código de terceiros carregado em tempo de execução
+        const sc = document.createElement('script'); sc.src = 'vendor/peerjs.min.js';
         sc.onload = ok; sc.onerror = () => falha(new Error('Não consegui carregar a parte de conexão. Confira a internet e tente de novo.'));
         document.head.appendChild(sc);
       });
     }
     // Transporte real: ligação direta entre os dois celulares (WebRTC), com o servidor público do PeerJS
-    // só para apresentar um ao outro. O id da sala é o código.
+    // (0.peerjs.com) só para apresentar um ao outro. O id da sala é o código. A biblioteca fica em
+    // vendor/peerjs.min.js (1.5.4, MIT): ver vendor/LICENSE-peerjs.txt.
     function redePeer(papel, codigo, cb) {
       const id = SALA_PREFIXO + codigo.toLowerCase();
       const peer = papel === 'host' ? new Peer(id, { debug: 0 }) : new Peer({ debug: 0 });
