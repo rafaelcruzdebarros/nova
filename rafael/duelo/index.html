@@ -148,7 +148,7 @@
             <li>Dica: cada poder tem a própria escala. Um 70 de Fogo é comum, um 70 de Tamanho é raro. Quem conhece o baralho escolhe melhor.</li>
             <li>Com o <b>Clima da rodada</b> ligado, cada rodada sorteia um clima que soma ou tira pontos de alguns poderes conforme a classe do dragão, ou proíbe um poder. O clima aparece para os dois antes da escolha, e a carta mostra o valor já ajustado.</li>
             <li>Com o <b>Cansaço</b> ligado, o poder que venceu perde 10 pontos naquela carta até o fim da partida. Repetir o mesmo truque cansa.</li>
-            <li><b>Cada um no seu celular</b>: um cria a sala e manda o código (ou o link) para o outro. A partida roda no celular de quem criou; o outro precisa de internet durante o jogo todo. Se a conexão cair, a partida acaba.</li>
+            <li><b>Cada um no seu celular</b>: um cria a sala e manda o código (ou o link) para o outro. A partida roda no celular de quem criou; os dois precisam de internet durante o jogo todo. Se a conexão cair, a partida acaba.</li>
             <li>Vence quem ficar com todas as cartas. Também dá para encerrar a qualquer momento: vence quem tiver mais.</li>
           </ol>
         </details>
@@ -217,6 +217,7 @@
     </footer>
   </div>
 
+  <script src="config.js"></script>
   <script src="cartas.js"></script>
   <script>
   (function () {
@@ -426,14 +427,54 @@
     const novoCodigo = () => Array.from({ length: 4 }, () => ALFABETO[Math.floor(Math.random() * ALFABETO.length)]).join('');
     const params = new URLSearchParams(location.search);
     const canalLocal = params.get('canal') === 'local'; // só para teste: duas abas do mesmo navegador, sem internet
-    function carregarPeer() {
+    const CFG = window.DUELO_REDE || {};
+    const usaSupabase = () => !!(CFG.supabaseUrl && CFG.supabaseAnon);
+    // As bibliotecas são servidas pelo próprio site (vendor/), não por CDN, e só quando este modo é escolhido.
+    function carregarRede() {
       return new Promise((ok, falha) => {
-        if (canalLocal || window.Peer) return ok();
-        // a biblioteca é servida pelo próprio site (vendor/), não por CDN: nada de código de terceiros carregado em tempo de execução
-        const sc = document.createElement('script'); sc.src = 'vendor/peerjs.min.js';
+        if (canalLocal) return ok();
+        if (usaSupabase() ? window.supabase : window.Peer) return ok();
+        const sc = document.createElement('script'); sc.src = usaSupabase() ? 'vendor/supabase.js' : 'vendor/peerjs.min.js';
         sc.onload = ok; sc.onerror = () => falha(new Error('Não consegui carregar a parte de conexão. Confira a internet e tente de novo.'));
         document.head.appendChild(sc);
       });
+    }
+    // Transporte pelo Realtime do Supabase: um canal por sala, broadcast para as mensagens e presença
+    // para saber quem está na sala. O servidor retransmite; não há ligação direta nem tabela.
+    let sbCliente = null;
+    function redeSupabase(papel, codigo, cb) {
+      if (!sbCliente) sbCliente = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnon, { auth: { persistSession: false, autoRefreshToken: false } });
+      const canal = sbCliente.channel('duelo-' + codigo.toUpperCase(), { config: { broadcast: { self: false }, presence: { key: papel + '-' + Math.random().toString(36).slice(2, 8) } } });
+      let aberta = false, fechada = false, pronto = false;
+      const presentes = () => Object.values(canal.presenceState()).flat();
+      const falhou = (msg, e) => { if (fechada) return; fechada = true; cb.erro(msg + (e && e.message ? ' [detalhe técnico: ' + String(e.message).slice(0, 160) + ']' : '')); };
+      canal
+        .on('broadcast', { event: 'm' }, ({ payload }) => { if (!fechada && payload && payload.de !== papel) cb.mensagem(payload.corpo); })
+        .on('presence', { event: 'sync' }, () => {
+          if (fechada || !pronto) return;
+          const lista = presentes(), hosts = lista.filter(x => x.papel === 'host').length, convs = lista.filter(x => x.papel === 'convidado').length;
+          if (papel === 'host') {
+            if (hosts > 1) return falhou('codigo-em-uso');
+            if (convs && !aberta) { aberta = true; cb.abriu(); }
+            else if (!convs && aberta) { fechada = true; cb.fechou('O outro celular saiu da sala.'); }
+          } else {
+            if (hosts && !aberta) { aberta = true; cb.abriu(); }
+            else if (!hosts && aberta) { fechada = true; cb.fechou('Quem criou a sala saiu.'); }
+          }
+        })
+        .subscribe(async (status, e) => {
+          if (fechada) return;
+          if (status === 'SUBSCRIBED') {
+            try { await canal.track({ papel }); } catch (err) { return falhou('Não consegui entrar na sala.', err); }
+            pronto = true; cb.pronto();
+            if (papel === 'convidado') setTimeout(() => { if (!aberta && !fechada && !presentes().some(x => x.papel === 'host')) falhou('O servidor não achou essa sala. Confira o código e se quem criou ainda está com a tela da sala aberta.'); }, 6000);
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') falhou('Não consegui falar com o servidor de salas. Confira a internet e tente de novo.', e);
+          else if (status === 'CLOSED' && aberta && !fechada) { fechada = true; cb.fechou('A conexão com o servidor de salas caiu.'); }
+        });
+      return {
+        enviar: o => { if (!fechada) canal.send({ type: 'broadcast', event: 'm', payload: { de: papel, corpo: o } }).catch(() => {}); },
+        fechar: () => { fechada = true; try { sbCliente.removeChannel(canal); } catch (e) {} }
+      };
     }
     // Transporte real: ligação direta entre os dois celulares (WebRTC), com o servidor público do PeerJS
     // (0.peerjs.com) só para apresentar um ao outro. O id da sala é o código. A biblioteca fica em
@@ -477,7 +518,7 @@
       setTimeout(() => { cb.pronto(); if (papel === 'convidado') bc.postMessage({ para: 'host', tipo: '_oi' }); }, 20);
       return { enviar: o => bc.postMessage({ para: outro, tipo: 'm', corpo: JSON.parse(JSON.stringify(o)) }), fechar: () => { try { bc.postMessage({ para: outro, tipo: '_tchau' }); bc.close(); } catch (e) {} } };
     }
-    const abrirRede = (papel, codigo, cb) => canalLocal ? redeLocal(papel, codigo, cb) : redePeer(papel, codigo, cb);
+    const abrirRede = (papel, codigo, cb) => canalLocal ? redeLocal(papel, codigo, cb) : usaSupabase() ? redeSupabase(papel, codigo, cb) : redePeer(papel, codigo, cb);
     function telaSala(titulo, codigo, texto, espera) {
       $('salaTitulo').textContent = titulo; $('salaCodigo').textContent = codigo || ''; $('salaCodigo').hidden = !codigo;
       $('salaTexto').textContent = texto || ''; $('salaEspera').textContent = espera || ''; $('salaEspera').hidden = !espera;
@@ -488,7 +529,7 @@
     // host: cria a sala e espera o outro
     async function criarSala(codigoFixo) {
       const nome = $('n1').value.trim() || 'Jogador 1';
-      try { await carregarPeer(); } catch (e) { telaSala('Não deu', '', e.message, ''); return; }
+      try { await carregarRede(); } catch (e) { telaSala('Não deu', '', e.message, ''); return; }
       modo = 'host'; eu = 0; fase = 'sala'; fecharRede();
       let tentativas = 0;
       const abrir = () => {
@@ -509,16 +550,17 @@
       codigo = (codigo || '').trim().toUpperCase();
       if (codigo.length !== 4) { $('codigo').focus(); return; }
       const nome = $('n1').value.trim() || 'Jogador 2';
-      try { await carregarPeer(); } catch (e) { telaSala('Não deu', '', e.message, ''); return; }
+      try { await carregarRede(); } catch (e) { telaSala('Não deu', '', e.message, ''); return; }
       modo = 'convidado'; eu = 1; fase = 'sala'; codigoSala = codigo; fecharRede();
-      telaSala('Entrando na sala', codigo, '', 'Falando com o servidor de apresentação');
+      telaSala('Entrando na sala', codigo, '', 'Falando com o servidor de salas');
       let entrou = false, etapa = 'servidor';
       const prazo = setTimeout(() => { if (entrou) return; fecharRede();
         telaSala('Não deu', '', etapa === 'servidor'
-          ? 'O servidor de apresentação (0.peerjs.com) não respondeu em 40 segundos. Pode ser a internet deste celular, ou o servidor fora do ar.'
-          : 'O servidor respondeu, mas a ligação direta entre os dois celulares não abriu em 40 segundos. Isso costuma ser a rede no meio do caminho: Wi-Fi com isolamento entre aparelhos, ou operadora de celular. Tente os dois no mesmo Wi-Fi, ou um deles no 4G.', ''); }, 40000);
+          ? 'O servidor de salas não respondeu em 40 segundos. Pode ser a internet deste celular, ou o servidor fora do ar.'
+          : (usaSupabase() ? 'O servidor respondeu, mas quem criou a sala não apareceu em 40 segundos. Confira o código e se a tela da sala continua aberta no outro celular.'
+            : 'O servidor respondeu, mas a ligação direta entre os dois celulares não abriu em 40 segundos. Isso costuma ser a rede no meio do caminho: Wi-Fi com isolamento entre aparelhos, ou operadora de celular. Tente os dois no mesmo Wi-Fi, ou um deles no 4G.'), ''); }, 40000);
       rede = abrirRede('convidado', codigo, {
-        pronto: () => { etapa = 'sala'; $('salaEspera').textContent = 'Servidor respondeu. Procurando a sala e abrindo a ligação direta'; },
+        pronto: () => { etapa = 'sala'; $('salaEspera').textContent = usaSupabase() ? 'Servidor respondeu. Procurando quem criou a sala' : 'Servidor respondeu. Procurando a sala e abrindo a ligação direta'; },
         abriu: () => { entrou = true; clearTimeout(prazo); $('salaEspera').textContent = 'Conectado! Esperando a partida começar'; rede.enviar({ tipo: 'oi', nome }); },
         mensagem: m => receberDoHost(m),
         fechou: motivo => caiu(motivo),
@@ -571,6 +613,8 @@
       try { if (navigator.share) { await navigator.share({ title: 'Duelo de Dragões', text: texto, url: link }); return; } } catch (e) { return; }
       try { await navigator.clipboard.writeText(texto + ' ' + link); $('compartilhar').textContent = 'Link copiado!'; } catch (e) { prompt('Copie o link:', link); }
     };
+    // fechar a aba ou recarregar avisa o outro lado na hora, em vez de esperar o servidor perceber
+    window.addEventListener('pagehide', () => fecharRede());
     if (params.get('sala')) { modoInicio('online'); $('codigo').value = params.get('sala').toUpperCase().slice(0, 4); }
     $('tamanho').querySelectorAll('button').forEach(b => b.onclick = () => { $('tamanho').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); tamanho = +b.dataset.n; });
     $('comecar').onclick = comecar;
