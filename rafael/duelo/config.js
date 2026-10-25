@@ -8,6 +8,6 @@
 // A chave anon é pública por desenho (vai para o navegador de todo mundo). A
 // service_role NUNCA entra aqui.
 window.DUELO_REDE = {
-  supabaseUrl: "",
-  supabaseAnon: ""
+  supabaseUrl: "https://tozovgjsgvwbqqzxxwdi.supabase.co",
+  supabaseAnon: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvem92Z2pzZ3Z3YnFxenh4d2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5Mzg0NTEsImV4cCI6MjEwODUxNDQ1MX0.yjE2Np9i77gZSAr_P6KeZk7zULfyeei-U7mgeASKDYg"
 };
