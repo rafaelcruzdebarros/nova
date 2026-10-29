@@ -188,7 +188,7 @@ function cota_(cliente, props) {
 function semMarkdown_(t) {
   return String(t)
     .replace(/\*\*(.+?)\*\*/g, '$1').replace(/__(.+?)__/g, '$1')   // negrito
-    .replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*(?!\*)/g, '$1$2')          // itálico com *
+    .replace(/(^|\s)\*(?!\s)([^*\n]+?)\*(?=[\s.,;:!?)]|$)/gm, '$1$2')  // itálico com * (não mexe em contas como 2*3*4)
     .replace(/^#{1,6}\s+/gm, '')                                     // títulos
     .replace(/^\s*[*-]\s+/gm, '• ')                                  // listas
     .replace(/`([^`\n]+)`/g, '$1');                                   // código em linha
