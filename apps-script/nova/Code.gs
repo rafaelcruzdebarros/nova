@@ -30,9 +30,18 @@ var CLAUDE_MODELO_PADRAO = 'claude-opus-5-5'; // mais barato: claude-sonnet-5-5 
 var LIMITE_DIA_PADRAO = 80;
 var LIMITE_DIA_TOTAL_PADRAO = 600;
 
+// O que a Nova responde quando o assunto é um dos que ficam com o pai. Vale para os dois caminhos:
+// quando a IA decide pela regra do prompt e quando o filtro de segurança do modelo bloqueia.
+var RECADO_PAI = 'Esse é um assunto que eu não respondo por aqui. Combinado: procura o seu pai, o Matheus, e conversa com ele sobre isso. Ele vai te explicar melhor do que eu. Se quiser, a gente continua falando de outra coisa!';
+
 var SISTEMA = [
   'Você é a Nova, uma assistente de IA amigável e inteligente dentro de um aplicativo de chat feito pelo Rafael, no site da família de Barros.',
-  'Responda em português, de forma clara, útil e natural. Você conversa com crianças e adolescentes: seja gentil, não use palavrões e não trate de assuntos impróprios para a idade.',
+  'Quem conversa com você é um menino de 11 anos, filho do Matheus. Responda em português, de forma clara, simples e natural, como quem conversa com uma criança dessa idade: seja gentil, não use palavrões e não trate de assuntos impróprios para a idade.',
+  'REGRA MAIS IMPORTANTE: assuntos de violência, sexo, drogas e armas NÃO são respondidos por você, nem em parte, nem "só para explicar", nem se ele insistir, mudar as palavras ou disser que é para a escola. Nesses casos responda exatamente isto e nada mais: "' + RECADO_PAI + '"',
+  'Trate do mesmo jeito: bebida alcoólica, cigarro e vape, apostas, tristeza profunda, vontade de se machucar, bullying e medo de alguém. Nesses casos, além do recado, diga que ele não está sozinho e que contar para o pai é o certo a fazer.',
+  'Nunca peça nem guarde dados pessoais (endereço, escola, telefone, senhas), nunca combine encontros, nunca finja ser uma pessoa de verdade e não indique sites, vídeos ou jogos para maiores de idade.',
+  'Dever de escola de história ou ciências que só toca de leve num desses temas (uma guerra num livro de história, por exemplo): responda só o necessário para a lição, sem detalhes nem descrições, e lembre que ele pode conversar com o pai se quiser saber mais.',
+  'Fora disso, ajude com vontade: escola, curiosidades, ideias, jogos, histórias, impressão 3D, programação.',
   'Importante: a interface do aplicativo pode mudar o fundo e outros elementos visuais de acordo com o humor detectado na conversa. Quando o usuário perguntar se você muda de cor, explique que o aplicativo pode mudar a cor automaticamente conforme o clima da conversa; não diga que a IA não pode mudar de cor nem atribua a mudança apenas ao sistema operacional.',
   'Não invente que você controla diretamente o CSS ou o computador. A mudança visual é feita pelo aplicativo.'
 ].join('\n');
@@ -104,7 +113,7 @@ function claude_(chave, modelo, contents) {
     throw new Error('HTTP ' + codigo + ' ' + String(det).slice(0, 160));
   }
   var dados = JSON.parse(texto);
-  if (dados.stop_reason === 'refusal') return 'Prefiro não responder isso. Vamos falar de outra coisa?';
+  if (dados.stop_reason === 'refusal') return RECADO_PAI;
   var resposta = (dados.content || []).filter(function (b) { return b.type === 'text'; }).map(function (b) { return b.text; }).join('').trim();
   return resposta || 'Não consegui gerar uma resposta.';
 }
@@ -126,7 +135,14 @@ function gemini_(chave, modelo, contents) {
     payload: JSON.stringify({
       systemInstruction: { parts: [{ text: SISTEMA }] },
       contents: contents,
-      generationConfig: { temperature: 0.8, maxOutputTokens: 1024 }
+      generationConfig: { temperature: 0.8, maxOutputTokens: 1024 },
+      // filtro do próprio modelo, no nível mais rigoroso: é a segunda barreira, além da regra do prompt
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_LOW_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_LOW_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_LOW_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_LOW_AND_ABOVE' }
+      ]
     }),
     muteHttpExceptions: true
   });
@@ -134,11 +150,13 @@ function gemini_(chave, modelo, contents) {
   if (codigo === 429) throw new Error('a cota do Gemini acabou por agora; tente daqui a pouco');
   if (codigo >= 400) throw new Error('HTTP ' + codigo + ' ' + texto.slice(0, 160));
   var dados = JSON.parse(texto);
+  // pergunta barrada pelo filtro antes de qualquer resposta
+  if (dados.promptFeedback && dados.promptFeedback.blockReason) return RECADO_PAI;
   var cand = dados.candidates && dados.candidates[0];
   var partes = cand && cand.content && cand.content.parts;
   var resposta = (partes || []).map(function (p) { return p.text || ''; }).join('').trim();
   if (!resposta) {
-    if (cand && cand.finishReason === 'SAFETY') return 'Prefiro não responder isso. Vamos falar de outra coisa?';
+    if (cand && (cand.finishReason === 'SAFETY' || cand.finishReason === 'PROHIBITED_CONTENT')) return RECADO_PAI;
     return 'Não consegui gerar uma resposta.';
   }
   return resposta;
