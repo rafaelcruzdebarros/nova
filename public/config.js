@@ -2,4 +2,4 @@
 // É a URL da implantação "Aplicativo da web", terminando em /exec. Em branco, a
 // Nova avisa que ainda não foi ligada. A chave do Gemini NÃO fica aqui: fica nas
 // propriedades do script, do lado do Google.
-window.NOVA_API_URL = "";
+window.NOVA_API_URL = "https://script.google.com/macros/s/AKfycbxd6XYwk0fIQuGpCYFs1aQncFT70x6V7c1b30xaq4zNECez7oGRR8tyCsvuDwMkis1F/exec";
