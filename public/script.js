@@ -226,7 +226,7 @@ async function perguntar(msgs) {
     const texto = await r.text();
     try { return JSON.parse(texto); } catch (e) { return { error: 'A IA respondeu algo que não entendi (HTTP ' + r.status + ').' }; }
   } catch (e) {
-    return { error: e.name === 'AbortError' ? 'A IA demorou demais para responder.' : 'Não consegui falar com a IA. Confira a internet.' };
+    return { error: e.name === 'AbortError' ? 'A IA demorou demais para responder.' : 'Não consegui falar com a IA (' + (e && e.message ? String(e.message).slice(0, 80) : 'sem detalhe') + '). Confira a internet.' };
   } finally { clearTimeout(prazo); }
 }
 async function send(text) {
@@ -248,8 +248,11 @@ async function send(text) {
     status.textContent = 'Pronto para a próxima.';
   } catch (err) {
     messages.pop(); render();
+    // com a conversa vazia o balão fica escondido atrás da tela de boas-vindas: a causa vai
+    // também para a linha de status, que aparece sempre
     addBubble('⚠️ ' + err.message, 'assistant');
-    status.textContent = 'Erro na conexão.';
+    status.textContent = '⚠️ ' + err.message;
+    showToast(err.message.slice(0, 120));
   }
 }
 form.addEventListener('submit', e => { e.preventDefault(); send(input.value); });
