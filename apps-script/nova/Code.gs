@@ -9,11 +9,14 @@
  *
  * COMO PUBLICAR (passo a passo no README ao lado):
  *   1. script.google.com › Novo projeto › cole este arquivo em Code.gs.
- *   2. Configurações do projeto › Propriedades do script:
- *        GEMINI_API_KEY  = a chave do Google AI Studio (obrigatória)
- *        GEMINI_MODEL    = nome do modelo (opcional; padrão abaixo)
- *        LIMITE_DIA      = mensagens por pessoa por dia (opcional; padrão 80)
- *        LIMITE_DIA_TOTAL= mensagens de todo mundo por dia (opcional; padrão 600)
+ *   2. Configurações do projeto › Propriedades do script (ao menos UMA chave):
+ *        ANTHROPIC_API_KEY = chave da API do Claude (console.anthropic.com; cobrada por uso)
+ *        CLAUDE_MODEL      = modelo do Claude (opcional; padrão abaixo)
+ *        GEMINI_API_KEY    = chave do Google AI Studio
+ *        GEMINI_MODEL      = modelo do Gemini (opcional; padrão abaixo)
+ *        LIMITE_DIA        = mensagens por pessoa por dia (opcional; padrão 80)
+ *        LIMITE_DIA_TOTAL  = mensagens de todo mundo por dia (opcional; padrão 600)
+ *      Com as duas chaves, o Claude responde e o Gemini é a reserva se ele falhar.
  *   3. Implantar › Nova implantação › Aplicativo da web:
  *        Executar como: EU   ·   Quem tem acesso: QUALQUER PESSOA
  *   4. Copie a URL (termina em /exec) para public/config.js, em NOVA_API_URL.
@@ -23,6 +26,7 @@
  */
 
 var MODELO_PADRAO = 'gemini-2.5-flash';
+var CLAUDE_MODELO_PADRAO = 'claude-opus-5-5'; // mais barato: claude-sonnet-5-5 ou claude-haiku-5-5 (propriedade CLAUDE_MODEL)
 var LIMITE_DIA_PADRAO = 80;
 var LIMITE_DIA_TOTAL_PADRAO = 600;
 
@@ -44,8 +48,8 @@ function doPost(e) {
   if (!mensagens.length) return responder_({ error: 'Nenhuma mensagem enviada.' });
 
   var props = PropertiesService.getScriptProperties();
-  var chave = props.getProperty('GEMINI_API_KEY');
-  if (!chave) return responder_({ error: 'A chave da API não foi configurada no Apps Script (propriedade GEMINI_API_KEY).' });
+  var chaveClaude = props.getProperty('ANTHROPIC_API_KEY'), chaveGemini = props.getProperty('GEMINI_API_KEY');
+  if (!chaveClaude && !chaveGemini) return responder_({ error: 'Nenhuma chave de IA configurada no Apps Script (propriedade ANTHROPIC_API_KEY ou GEMINI_API_KEY).' });
 
   var limite = cota_(String(corpo.cliente || 'anonimo').slice(0, 64), props);
   if (limite) return responder_({ error: limite });
@@ -58,18 +62,59 @@ function doPost(e) {
   });
   if (!contents.length || contents[contents.length - 1].role !== 'user') return responder_({ error: 'A última mensagem precisa ser sua.' });
 
-  var modelo = props.getProperty('GEMINI_MODEL') || MODELO_PADRAO;
+  // Claude primeiro, se houver chave; o Gemini entra como reserva quando o Claude falha
+  var erroClaude = null;
+  if (chaveClaude) {
+    try { return responder_({ answer: claude_(chaveClaude, props.getProperty('CLAUDE_MODEL') || CLAUDE_MODELO_PADRAO, contents) }); }
+    catch (err) { erroClaude = String(err.message || err); console.error('Claude: ' + erroClaude); if (!chaveGemini) return responder_({ error: 'Erro ao falar com o Claude (' + erroClaude.slice(0, 200) + ').' }); }
+  }
   try {
-    return responder_({ answer: gemini_(chave, modelo, contents) });
+    return responder_({ answer: gemini_(chaveGemini, props.getProperty('GEMINI_MODEL') || MODELO_PADRAO, contents) });
   } catch (err) {
     console.error('Gemini: ' + err);
-    return responder_({ error: 'Erro ao falar com a IA (' + String(err.message || err).slice(0, 200) + ').' });
+    return responder_({ error: 'Erro ao falar com a IA (' + (erroClaude ? 'Claude: ' + erroClaude.slice(0, 120) + '; ' : '') + 'Gemini: ' + String(err.message || err).slice(0, 120) + ').' });
   }
+}
+
+// Claude pela API de mensagens da Anthropic (chamada HTTP direta: não há SDK para Apps Script).
+// O modelo é o Opus 5.5 por padrão, com esforço baixo (conversa simples). Thinking fica no padrão
+// do modelo; não se manda temperature (os modelos atuais recusam). Com `fallbacks: 'default'` uma
+// recusa do classificador de segurança é reencaminhada pela própria API a outro modelo.
+function claude_(chave, modelo, contents) {
+  var mensagens = contents.map(function (c) { return { role: c.role === 'model' ? 'assistant' : 'user', content: c.parts[0].text }; });
+  var resp = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'x-api-key': chave, 'anthropic-version': '2023-06-01', 'anthropic-beta': 'server-side-fallback-2026-07-01' },
+    payload: JSON.stringify({
+      model: modelo,
+      max_tokens: 2048,
+      system: SISTEMA,
+      messages: mensagens,
+      output_config: { effort: 'low' },
+      fallbacks: 'default'
+    }),
+    muteHttpExceptions: true
+  });
+  var codigo = resp.getResponseCode(), texto = resp.getContentText();
+  if (codigo === 429) throw new Error('o limite de uso do Claude foi atingido por agora; tente daqui a pouco');
+  if (codigo === 401) throw new Error('a chave do Claude não foi aceita (ANTHROPIC_API_KEY)');
+  if (codigo >= 400) {
+    var det = ''; try { det = JSON.parse(texto).error.message; } catch (e) { det = texto.slice(0, 160); }
+    throw new Error('HTTP ' + codigo + ' ' + String(det).slice(0, 160));
+  }
+  var dados = JSON.parse(texto);
+  if (dados.stop_reason === 'refusal') return 'Prefiro não responder isso. Vamos falar de outra coisa?';
+  var resposta = (dados.content || []).filter(function (b) { return b.type === 'text'; }).map(function (b) { return b.text; }).join('').trim();
+  return resposta || 'Não consegui gerar uma resposta.';
 }
 
 // GET só para conferir no navegador se a implantação está no ar.
 function doGet() {
-  return responder_({ ok: true, nova: 'no ar', modelo: PropertiesService.getScriptProperties().getProperty('GEMINI_MODEL') || MODELO_PADRAO });
+  var props = PropertiesService.getScriptProperties();
+  var usaClaude = !!props.getProperty('ANTHROPIC_API_KEY');
+  return responder_({ ok: true, nova: 'no ar', ia: usaClaude ? 'claude' : (props.getProperty('GEMINI_API_KEY') ? 'gemini' : 'sem chave'),
+    modelo: usaClaude ? (props.getProperty('CLAUDE_MODEL') || CLAUDE_MODELO_PADRAO) : (props.getProperty('GEMINI_MODEL') || MODELO_PADRAO) });
 }
 
 function gemini_(chave, modelo, contents) {
