@@ -26,6 +26,7 @@
  */
 
 var MODELO_PADRAO = 'gemini-2.5-flash';
+var VERSAO = '2026-10-29-pai'; // muda a cada edição: o doGet mostra, para conferir qual versão está no ar
 var CLAUDE_MODELO_PADRAO = 'claude-opus-5-5'; // mais barato: claude-sonnet-5-5 ou claude-haiku-5-5 (propriedade CLAUDE_MODEL)
 var LIMITE_DIA_PADRAO = 80;
 var LIMITE_DIA_TOTAL_PADRAO = 600;
@@ -122,7 +123,7 @@ function claude_(chave, modelo, contents) {
 function doGet() {
   var props = PropertiesService.getScriptProperties();
   var usaClaude = !!props.getProperty('ANTHROPIC_API_KEY');
-  return responder_({ ok: true, nova: 'no ar', ia: usaClaude ? 'claude' : (props.getProperty('GEMINI_API_KEY') ? 'gemini' : 'sem chave'),
+  return responder_({ ok: true, nova: 'no ar', versao: VERSAO, ia: usaClaude ? 'claude' : (props.getProperty('GEMINI_API_KEY') ? 'gemini' : 'sem chave'),
     modelo: usaClaude ? (props.getProperty('CLAUDE_MODEL') || CLAUDE_MODELO_PADRAO) : (props.getProperty('GEMINI_MODEL') || MODELO_PADRAO) });
 }
 
@@ -183,6 +184,16 @@ function cota_(cliente, props) {
   } finally { lock.releaseLock(); }
 }
 
+// A tela da Nova mostra texto puro: tira a formatação Markdown que os modelos costumam mandar.
+function semMarkdown_(t) {
+  return String(t)
+    .replace(/\*\*(.+?)\*\*/g, '$1').replace(/__(.+?)__/g, '$1')   // negrito
+    .replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*(?!\*)/g, '$1$2')          // itálico com *
+    .replace(/^#{1,6}\s+/gm, '')                                     // títulos
+    .replace(/^\s*[*-]\s+/gm, '• ')                                  // listas
+    .replace(/`([^`\n]+)`/g, '$1');                                   // código em linha
+}
 function responder_(obj) {
+  if (obj && typeof obj.answer === 'string') obj.answer = semMarkdown_(obj.answer);
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
