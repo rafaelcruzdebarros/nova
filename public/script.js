@@ -207,6 +207,28 @@ function render() {
   const last = [...messages].reverse().find(m => m.role === 'assistant');
   if (last) lastAnswer = last.content;
 }
+// Quem responde é o Apps Script em NOVA_API_URL (public/config.js), que guarda a chave do
+// Gemini do lado do Google. O corpo vai como text/plain: com application/json o navegador
+// faria uma consulta prévia de CORS, que o Apps Script não responde. Ele responde 200 sempre,
+// com { answer } ou { error }.
+const CLIENTE_KEY = 'novaClienteV1';
+function idCliente() {
+  let id = localStorage.getItem(CLIENTE_KEY);
+  if (!id) { id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem(CLIENTE_KEY, id); }
+  return id;
+}
+async function perguntar(msgs) {
+  const url = window.NOVA_API_URL;
+  if (!url) return { error: 'A Nova ainda não foi ligada à IA: falta o endereço do Apps Script em config.js.' };
+  const controle = new AbortController(); const prazo = setTimeout(() => controle.abort(), 60000);
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ messages: msgs.slice(-12), cliente: idCliente() }), signal: controle.signal });
+    const texto = await r.text();
+    try { return JSON.parse(texto); } catch (e) { return { error: 'A IA respondeu algo que não entendi (HTTP ' + r.status + ').' }; }
+  } catch (e) {
+    return { error: e.name === 'AbortError' ? 'A IA demorou demais para responder.' : 'Não consegui falar com a IA. Confira a internet.' };
+  } finally { clearTimeout(prazo); }
+}
 async function send(text) {
   if (!text.trim()) return;
   messages.push({ role:'user', content:text.trim() });
@@ -217,9 +239,8 @@ async function send(text) {
   input.setAttribute('aria-invalid', 'false');
   status.textContent = '🧠 Pensando...';
   try {
-    const response = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ messages }) });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Erro desconhecido.');
+    const data = await perguntar(messages);
+    if (data.error) throw new Error(data.error);
     const answer = data.answer || 'Não consegui gerar uma resposta.';
     messages.push({ role:'assistant', content:answer });
     lastAnswer = answer;

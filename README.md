@@ -58,9 +58,15 @@ Chaves ficam no arquivo `.env`, que não é versionado.
 
 ## Nova
 
-A Nova (`public/`) é uma assistente de IA. A parte visual abre direto pelo site,
-mas as respostas dependem do servidor `server.mjs` rodando com uma chave do
-Gemini no `.env`:
+A Nova (`public/`) é uma assistente de IA. O site é estático, então quem fala com
+o Gemini é um **Google Apps Script** que guarda a chave do lado do Google e
+responde ao site (mesmo desenho do IAgo do MAPA). O script e o passo a passo
+estão em `apps-script/nova/`; o endereço da implantação vai em `public/config.js`
+(`NOVA_API_URL`). Sem esse endereço a Nova abre, mas avisa que ainda não foi
+ligada à IA.
+
+O `server.mjs` (Express + Gemini) continua no repositório para rodar a Nova no
+computador, com a chave num `.env`:
 
 ```bash
 npm install
