@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261108">
 </head>
 <body>
   <div class="app-shell">
@@ -74,20 +74,23 @@
           </aside>
         </div>
 
-        <div id="status" class="status">Pronto para conversar.</div>
-
-        <form id="form" class="composer">
-          <button type="button" class="attach" title="Anexar">⌕</button>
-          <input id="input" placeholder="Digite sua mensagem aqui..." autocomplete="off" spellcheck="true" lang="pt-BR" autocorrect="on">
-          <button type="button" id="mic" class="mic" title="Falar">♩</button>
-          <span class="divider"></span>
-          <button type="submit" class="send" title="Enviar">➤</button>
-        </form>
-
-        <div class="quick-actions">
-          <button id="micQuick">♩ &nbsp; Usar microfone</button>
-          <button id="speak">◖ &nbsp; Ler resposta</button>
-          <button id="memoryBtn">▤ &nbsp; Memória ativada</button>
+        <!-- barra fixa no rodapé: fica visível enquanto a conversa rola -->
+        <div class="dock">
+          <div id="status" class="status">Pronto para conversar.</div>
+  
+          <form id="form" class="composer">
+            <button type="button" class="attach" title="Anexar">⌕</button>
+            <input id="input" placeholder="Digite sua mensagem aqui..." autocomplete="off" spellcheck="true" lang="pt-BR" autocorrect="on">
+            <button type="button" id="mic" class="mic" title="Falar">♩</button>
+            <span class="divider"></span>
+            <button type="submit" class="send" title="Enviar">➤</button>
+          </form>
+  
+          <div class="quick-actions">
+            <button id="micQuick">♩ &nbsp; Usar microfone</button>
+            <button id="speak">◖ &nbsp; Ler resposta</button>
+            <button id="memoryBtn">▤ &nbsp; Memória ativada</button>
+          </div>
         </div>
       </section>
     </main>
