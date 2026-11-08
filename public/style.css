@@ -115,3 +115,14 @@ body.dark .nova-bot{filter:brightness(.92)}
 }
 
 .history-item.active{background:rgba(79,140,255,.16);font-weight:700}
+
+/* ===== Barra de digitar fixa no rodapé =====
+   Fica presa à parte de baixo da tela enquanto a conversa rola. O fundo é translúcido com
+   desfoque, para combinar com as cores de humor, e um degradê suaviza a borda de cima. */
+.dock{position:sticky;bottom:0;z-index:15;margin-top:auto;padding:14px 0 calc(14px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.88) 22%,rgba(255,255,255,.96) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.dock .quick-actions{margin-top:12px}
+.content{padding-bottom:0}
+body.dark .dock{background:linear-gradient(180deg,rgba(16,26,42,0) 0%,rgba(16,26,42,.9) 22%,rgba(16,26,42,.97) 100%)}
+@media(max-width:760px){.dock{padding-top:10px}.dock .quick-actions{margin-top:8px}}
+/* celular deitado: a tela é baixa, então os atalhos saem e fica só o campo (o microfone continua nele) */
+@media(max-height:500px){.dock{padding-top:8px}.dock .quick-actions{display:none}.status{margin-bottom:4px}}
